@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Blocks game</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="shortcut icon" href="favicon.ico" />
+    <style type="text/css">
+      body {
+        font-family: 'Slackey', cursive;
+        text-align: center;
+        margin: 0;
+      }
+
+      #game-canvas {
+        border: 1px solid black;
+        margin: 0 auto;
+      }
+    </style>
+    <link rel="stylesheet" type="text/css" href="fonts/fonts.css" />
+  </head>
+  <body>
+    <h1>Blocks</h1>
+
+    <div id="toolbar">
+      <div id="buttons">
+        <a id="new-game" href="javascript:newGame()">New game</a>
+        <a id="pause" href="javascript:togglePause()">Continue</a>
+      </div>
+      <div id="score-block">
+        Score: <span id="score">0</span>
+        <br/>
+        Best score: <span id="best-score">0</span>
+      </div>
+    </div>
+
+    <canvas id="game-canvas" width="500" height="500"></canvas>
+
+    <script src="index.js"></script>
+  </body>
+</html>
