@@ -67,6 +67,7 @@ Cell.prototype.y = function() {
 
 function Board() {
     this.cells = [];
+    this.currentCell = null;
 }
 
 Board.prototype.randomNumber = function() {
@@ -132,7 +133,9 @@ Board.prototype.remove = function(cell) {
 };
 
 Board.prototype.addRandomCell = function() {
-    this.insert(this.emptyCells().randomElement(), this.availableNumbers().randomElement());
+    var cell = this.emptyCells().randomElement();
+    var n = this.availableNumbers().randomElement();
+    this.insert(cell, n);
 };
 
 Board.prototype.hasBlocks = function() {
@@ -164,6 +167,43 @@ Board.prototype.drawPaused = function() {
     ctx.fillText('Paused', CANVAS_WIDTH/2 - 85, CANVAS_WIDTH/2);
 };
 
+Board.prototype.click = function(x, y) {
+    var i = Math.floor(x / WIDTH);
+    var j = Math.floor(y / WIDTH);
+    var clickedCell = new Cell(i, j);
+
+    if (clickedCell.isEmpty() && this.currentCell === null) return;
+
+    if (this.currentCell === null) {
+        this.currentCell = clickedCell;
+        clickedCell.select();
+    }
+    else {
+        if (isSameRow(this.currentCell, clickedCell) || isSameCol(this.currentCell, clickedCell)) {
+            if (isAvailableToMove(this.currentCell, clickedCell)) {
+                if (isSameNumber(this.currentCell, clickedCell) || isMaxInSum(this.currentCell, clickedCell)) {
+                    score += 1;
+                    this.remove(this.currentCell);
+                    this.remove(clickedCell);
+                    currentCell = null;
+                    updateScore();
+                    checkFinish();
+                    return;
+                }
+                else if (clickedCell.isEmpty()) {
+                    this.insert(moveCellTarget(this.currentCell, clickedCell), this.currentCell.n());
+                    this.currentCell.remove();
+                    this.currentCell = null;
+                    return;
+                }
+            }
+        }
+
+        this.currentCell.draw();
+        // TODO: Play wrong sound
+        this.currentCell = null;
+    }
+};
 
 var newGame = function () {
     board = new Board();
@@ -285,45 +325,12 @@ var CANVAS_WIDTH = 500;
 var WIDTH = Math.floor(CANVAS_WIDTH / N);
 var canvas = document.getElementById('game-canvas');
 var ctx = canvas.getContext('2d');
-var currentCell = null;
 var board = null;
 var score = 0;
 var paused = false;
 
 canvas.addEventListener('click', function(e) {
-    var cell = new Cell(Math.floor(e.offsetX / WIDTH), Math.floor(e.offsetY / WIDTH));
-
-    if (cell.isEmpty() && currentCell === null) return;
-
-    if (currentCell === null) {
-        currentCell = cell;
-        cell.select();
-    }
-    else {
-        if (isSameRow(currentCell, cell) || isSameCol(currentCell, cell)) {
-            if (isAvailableToMove(currentCell, cell)) {
-                if (isSameNumber(currentCell, cell) || isMaxInSum(currentCell, cell)) {
-                    score += 1;
-                    board.remove(currentCell);
-                    board.remove(cell);
-                    currentCell = null;
-                    updateScore();
-                    checkFinish();
-                    return;
-                }
-                else if (cell.isEmpty()) {
-                    board.insert(moveCellTarget(currentCell, cell), currentCell.n());
-                    currentCell.remove();
-                    currentCell = null;
-                    return;
-                }
-            }
-        }
-
-        currentCell.draw();
-        // TODO: Play wrong sound
-        currentCell = null;
-    }
+    board.click(e.offsetX, e.offsetY);
 }, false);
 
 
