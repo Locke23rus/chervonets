@@ -39,7 +39,7 @@ Cell.prototype.drawNumber = function(color) {
 };
 
 Cell.prototype.isEmpty = function() {
-    return this.n() == null;
+    return this.n() === null;
 };
 
 Cell.prototype.select = function() {
@@ -71,7 +71,7 @@ function Board() {
 
 Board.prototype.randomNumber = function() {
     var k = 0;
-    while (k == 0 || k >= N) {
+    while (k === 0 || k >= N) {
         k = Math.floor(Math.random() * 10);
     }
     return k;
@@ -101,7 +101,7 @@ Board.prototype.emptyCells = function() {
     var a = [];
     for(var j = 0; j < N; j++) {
         for(var i = 0; i < N; i++) {
-            if (this.cells[j][i] == null) {
+            if (this.cells[j][i] === null) {
                 a.push(new Cell(i, j));
             }
         }
@@ -208,7 +208,7 @@ var isAvailableToMove = function(a, b) {
         }
         else {
             for(var i = min + 1; i < max; i++) {
-                if (board.cells[a.j][i] != null) {
+                if (board.cells[a.j][i] !== null) {
 //                    console.log('isAvailableToMove - FALSE');
                     return false;
                 }
@@ -227,7 +227,7 @@ var isAvailableToMove = function(a, b) {
         }
         else {
             for(var j = min + 1; j < max; j++) {
-                if (board.cells[j][a.i] != null) {
+                if (board.cells[j][a.i] !== null) {
 //                    console.log('isVisible - FALSE');
                     return false;
                 }
@@ -245,13 +245,13 @@ var moveCellTarget = function(a, b) {
     if (isSameRow(a, b)) {
         if (b.i > a.i) {
             for(i = b.i; i < N; i++) {
-                if (board.cells[a.j][i] == null) t = i;
+                if (board.cells[a.j][i] === null) t = i;
                 else break;
             }
         }
         else {
             for(i = b.i; i >= 0; i--) {
-                if (board.cells[a.j][i] == null) t = i;
+                if (board.cells[a.j][i] === null) t = i;
                 else break;
             }
         }
@@ -261,13 +261,13 @@ var moveCellTarget = function(a, b) {
     else {
         if (b.j > a.j) {
             for(j = b.j; j < N; j++) {
-                if (board.cells[j][a.i] == null) t = j;
+                if (board.cells[j][a.i] === null) t = j;
                 else break;
             }
         }
         else {
             for(j = b.j; j >= 0; j--) {
-                if (board.cells[j][a.i] == null) t = j;
+                if (board.cells[j][a.i] === null) t = j;
                 else break;
             }
         }
@@ -293,9 +293,9 @@ var paused = false;
 canvas.addEventListener('click', function(e) {
     var cell = new Cell(Math.floor(e.offsetX / WIDTH), Math.floor(e.offsetY / WIDTH));
 
-    if (cell.isEmpty() && currentCell == null) return;
+    if (cell.isEmpty() && currentCell === null) return;
 
-    if (currentCell == null) {
+    if (currentCell === null) {
         currentCell = cell;
         cell.select();
     }
