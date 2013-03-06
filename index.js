@@ -17,6 +17,8 @@ Board = (function() {
   function Board() {
     this.cells = [];
     this.selectedCell = null;
+    this.clickedCell = null;
+    this.targetCell = null;
   }
 
   Board.prototype.randomNumber = function() {
@@ -147,32 +149,32 @@ Board = (function() {
   };
 
   Board.prototype.click = function(x, y) {
-    var cell, i, j;
+    var i, j;
     i = Math.floor(x / WIDTH);
     j = Math.floor(y / WIDTH);
-    cell = new Cell(i, j);
-    if (cell.isEmpty() && (this.selectedCell == null)) {
+    this.clickedCell = new Cell(i, j);
+    if (this.clickedCell.isEmpty() && (this.selectedCell == null)) {
       return;
     }
     if (this.selectedCell == null) {
-      this.selectedCell = cell;
+      this.selectedCell = this.clickedCell;
       return this.selectedCell.select();
     } else {
-      if (this.isSameRow(this.selectedCell, cell) || this.isSameCol(this.selectedCell, cell)) {
-        if (this.isAvailableToMove(this.selectedCell, cell)) {
-          if (this.isSameNumber(this.selectedCell, cell) || this.isMaxInSum(this.selectedCell, cell)) {
-            game.incrementScore(1);
-            this.remove(this.selectedCell);
-            this.remove(cell);
-            this.selectedCell = null;
-            checkFinish();
-            return;
-          } else if (cell.isEmpty()) {
-            this.insert(this.moveCellTarget(this.selectedCell, cell), currentCell.n());
-            this.remove(this.selectedCell);
-            this.selectedCell = null;
-            return;
-          }
+      if (this.isAvailableToMove()) {
+        if (this.isSameNumber() || this.isMaxInSum()) {
+          game.incrementScore(this.scoreFactor(this.hitDistance()));
+          this.remove(this.selectedCell);
+          this.remove(this.clickedCell);
+          this.selectedCell = null;
+          checkFinish();
+          return;
+        } else if (this.clickedCell.isEmpty()) {
+          this.targetCell = this.moveCellTarget();
+          this.insert(this.targetCell, this.selectedCell.n());
+          game.decrementScore(this.scoreFactor(this.moveDistance()));
+          this.remove(this.selectedCell);
+          this.selectedCell = null;
+          return;
         }
       }
       this.selectedCell.draw();
@@ -180,16 +182,43 @@ Board = (function() {
     }
   };
 
-  Board.prototype.moveCellTarget = function(a, b) {
+  Board.prototype.hitDistance = function() {
+    if (this.isSameRow()) {
+      return Math.abs(this.clickedCell.i - this.selectedCell.i) + 1;
+    } else {
+      return Math.abs(this.clickedCell.j - this.selectedCell.j) + 1;
+    }
+  };
+
+  Board.prototype.moveDistance = function() {
+    if (this.isSameRow()) {
+      return Math.abs(this.targetCell.i - this.selectedCell.i);
+    } else {
+      return Math.abs(this.targetCell.j - this.selectedCell.j);
+    }
+  };
+
+  Board.prototype.scoreFactor = function(n) {
+    var i, sum;
+    sum = 0;
+    i = 0;
+    while (i <= n) {
+      sum += i;
+      i++;
+    }
+    return sum;
+  };
+
+  Board.prototype.moveCellTarget = function() {
     var i, j, t;
     t = void 0;
     i = void 0;
     j = void 0;
-    if (this.isSameRow(a, b)) {
-      if (b.i > a.i) {
-        i = b.i;
+    if (this.isSameRow()) {
+      if (this.clickedCell.i > this.selectedCell.i) {
+        i = this.clickedCell.i;
         while (i < N) {
-          if (this.cells[a.j][i] == null) {
+          if (this.cells[this.selectedCell.j][i] == null) {
             t = i;
           } else {
             break;
@@ -197,9 +226,9 @@ Board = (function() {
           i++;
         }
       } else {
-        i = b.i;
+        i = this.clickedCell.i;
         while (i >= 0) {
-          if (this.cells[a.j][i] == null) {
+          if (this.cells[this.selectedCell.j][i] == null) {
             t = i;
           } else {
             break;
@@ -207,12 +236,12 @@ Board = (function() {
           i--;
         }
       }
-      return new Cell(t, a.j);
+      return new Cell(t, this.selectedCell.j);
     } else {
-      if (b.j > a.j) {
-        j = b.j;
+      if (this.clickedCell.j > this.selectedCell.j) {
+        j = this.clickedCell.j;
         while (j < N) {
-          if (this.cells[j][a.i] == null) {
+          if (this.cells[j][this.selectedCell.i] == null) {
             t = j;
           } else {
             break;
@@ -220,9 +249,9 @@ Board = (function() {
           j++;
         }
       } else {
-        j = b.j;
+        j = this.clickedCell.j;
         while (j >= 0) {
-          if (this.cells[j][a.i] == null) {
+          if (this.cells[j][this.selectedCell.i] == null) {
             t = j;
           } else {
             break;
@@ -230,40 +259,43 @@ Board = (function() {
           j--;
         }
       }
-      return new Cell(a.i, t);
+      return new Cell(this.selectedCell.i, t);
     }
   };
 
-  Board.prototype.isAvailableToMove = function(a, b) {
+  Board.prototype.isAvailableToMove = function() {
     var i, j, max, min;
+    if (!(this.isSameRow() || this.isSameCol())) {
+      return false;
+    }
     min = void 0;
     max = void 0;
-    if (this.isSelf(a, b)) {
+    if (this.isSelf()) {
       return false;
-    } else if (this.isSameRow(a, b)) {
-      min = Math.min(a.i, b.i);
-      max = Math.max(a.i, b.i);
+    } else if (this.isSameRow()) {
+      min = Math.min(this.selectedCell.i, this.clickedCell.i);
+      max = Math.max(this.selectedCell.i, this.clickedCell.i);
       if ((min + 1) === max) {
         return true;
       } else {
         i = min + 1;
         while (i < max) {
-          if (this.cells[a.j][i] != null) {
+          if (this.cells[this.selectedCell.j][i] != null) {
             return false;
           }
           i++;
         }
         return true;
       }
-    } else if (this.isSameCol(a, b)) {
-      min = Math.min(a.j, b.j);
-      max = Math.max(a.j, b.j);
+    } else if (this.isSameCol()) {
+      min = Math.min(this.selectedCell.j, this.clickedCell.j);
+      max = Math.max(this.selectedCell.j, this.clickedCell.j);
       if ((min + 1) === max) {
         return true;
       } else {
         j = min + 1;
         while (j < max) {
-          if (this.cells[j][a.i] != null) {
+          if (this.cells[j][this.selectedCell.i] != null) {
             return false;
           }
           j++;
@@ -274,24 +306,24 @@ Board = (function() {
     return false;
   };
 
-  Board.prototype.isSameNumber = function(a, b) {
-    return this.cells[a.j][a.i] === this.cells[b.j][b.i];
+  Board.prototype.isSameNumber = function() {
+    return this.selectedCell.n() === this.clickedCell.n();
   };
 
-  Board.prototype.isMaxInSum = function(a, b) {
-    return (this.cells[a.j][a.i] + this.cells[b.j][b.i]) === N;
+  Board.prototype.isMaxInSum = function() {
+    return (this.selectedCell.n() + this.clickedCell.n()) === N;
   };
 
-  Board.prototype.isSelf = function(a, b) {
-    return a.i === b.i && a.j === b.j;
+  Board.prototype.isSelf = function() {
+    return this.selectedCell.i === this.clickedCell.i && this.selectedCell.j === this.clickedCell.j;
   };
 
-  Board.prototype.isSameRow = function(a, b) {
-    return a.j === b.j;
+  Board.prototype.isSameRow = function() {
+    return this.selectedCell.j === this.clickedCell.j;
   };
 
-  Board.prototype.isSameCol = function(a, b) {
-    return a.i === b.i;
+  Board.prototype.isSameCol = function() {
+    return this.selectedCell.i === this.clickedCell.i;
   };
 
   return Board;
@@ -407,6 +439,11 @@ Game = (function() {
 
   Game.prototype.incrementScore = function(n) {
     this.score += n;
+    return this.showScore();
+  };
+
+  Game.prototype.decrementScore = function(n) {
+    this.score -= n;
     return this.showScore();
   };
 

@@ -3,6 +3,8 @@ class Board
   constructor: ->
     @cells = []
     @selectedCell = null
+    @clickedCell = null
+    @targetCell = null
 
   randomNumber: ->
     k = 0
@@ -103,118 +105,144 @@ class Board
   click: (x, y) ->
     i = Math.floor(x / WIDTH)
     j = Math.floor(y / WIDTH)
-    cell = new Cell(i, j)
+    @clickedCell = new Cell(i, j)
 
-    return  if cell.isEmpty() and not @selectedCell?
+    return  if @clickedCell.isEmpty() and not @selectedCell?
     unless @selectedCell?
-      @selectedCell = cell
+      @selectedCell = @clickedCell
       @selectedCell.select()
     else
-      if @isSameRow(@selectedCell, cell) or @isSameCol(@selectedCell, cell)
-        if @isAvailableToMove(@selectedCell, cell)
-          if @isSameNumber(@selectedCell, cell) or @isMaxInSum(@selectedCell, cell)
-            game.incrementScore 1
-            @remove @selectedCell
-            @remove cell
-            @selectedCell = null
-            checkFinish()
-            return
-          else if cell.isEmpty()
-            @insert @moveCellTarget(@selectedCell, cell), currentCell.n()
-            @remove @selectedCell
-            @selectedCell = null
-            return
+      if @isAvailableToMove()
+        if @isSameNumber() or @isMaxInSum()
+
+          game.incrementScore @scoreFactor(@hitDistance())
+          @remove @selectedCell
+          @remove @clickedCell
+          @selectedCell = null
+          checkFinish()
+          return
+        else if @clickedCell.isEmpty()
+          @targetCell = @moveCellTarget()
+          @insert @targetCell, @selectedCell.n()
+          game.decrementScore @scoreFactor(@moveDistance())
+
+          @remove @selectedCell
+          @selectedCell = null
+          return
+
       @selectedCell.draw()
 
       # TODO: Play wrong sound
       @selectedCell = null
 
+  hitDistance: () ->
+    if @isSameRow()
+      Math.abs(@clickedCell.i - @selectedCell.i) + 1
+    else
+      Math.abs(@clickedCell.j - @selectedCell.j) + 1
 
-  moveCellTarget: (a, b) ->
+  moveDistance: () ->
+    if @isSameRow()
+      Math.abs(@targetCell.i - @selectedCell.i)
+    else
+      Math.abs(@targetCell.j - @selectedCell.j)
+
+
+  scoreFactor: (n) ->
+    sum = 0
+    i = 0
+    while i <= n
+      sum += i
+      i++
+
+    sum
+
+  moveCellTarget: () ->
     t = undefined
     i = undefined
     j = undefined
-    if @isSameRow(a, b)
-      if b.i > a.i
-        i = b.i
+    if @isSameRow()
+      if @clickedCell.i > @selectedCell.i
+        i = @clickedCell.i
         while i < N
-          unless @cells[a.j][i]?
+          unless @cells[@selectedCell.j][i]?
             t = i
           else
             break
           i++
       else
-        i = b.i
+        i = @clickedCell.i
         while i >= 0
-          unless @cells[a.j][i]?
+          unless @cells[@selectedCell.j][i]?
             t = i
           else
             break
           i--
-      new Cell(t, a.j)
+      new Cell(t, @selectedCell.j)
     else
-      if b.j > a.j
-        j = b.j
+      if @clickedCell.j > @selectedCell.j
+        j = @clickedCell.j
         while j < N
-          unless @cells[j][a.i]?
+          unless @cells[j][@selectedCell.i]?
             t = j
           else
             break
           j++
       else
-        j = b.j
+        j = @clickedCell.j
         while j >= 0
-          unless @cells[j][a.i]?
+          unless @cells[j][@selectedCell.i]?
             t = j
           else
             break
           j--
-      new Cell(a.i, t)
+      new Cell(@selectedCell.i, t)
 
-  isAvailableToMove: (a, b) ->
+  isAvailableToMove: () ->
+    return false unless @isSameRow() or @isSameCol()
     min = undefined
     max = undefined
-    if @isSelf(a, b)
+    if @isSelf()
       return false
-    else if @isSameRow(a, b)
-      min = Math.min(a.i, b.i)
-      max = Math.max(a.i, b.i)
+    else if @isSameRow()
+      min = Math.min(@selectedCell.i, @clickedCell.i)
+      max = Math.max(@selectedCell.i, @clickedCell.i)
       if (min + 1) is max
         return true
       else
         i = min + 1
 
         while i < max
-          return false if @cells[a.j][i]?
+          return false if @cells[@selectedCell.j][i]?
           i++
 
         return true
-    else if @isSameCol(a, b)
-      min = Math.min(a.j, b.j)
-      max = Math.max(a.j, b.j)
+    else if @isSameCol()
+      min = Math.min(@selectedCell.j, @clickedCell.j)
+      max = Math.max(@selectedCell.j, @clickedCell.j)
       if (min + 1) is max
         return true
       else
         j = min + 1
 
         while j < max
-          return false  if @cells[j][a.i]?
+          return false  if @cells[j][@selectedCell.i]?
           j++
 
         return true
     false
 
-  isSameNumber: (a, b) ->
-    @cells[a.j][a.i] is @cells[b.j][b.i]
+  isSameNumber: () ->
+    @selectedCell.n() is @clickedCell.n()
 
-  isMaxInSum: (a, b) ->
-    (@cells[a.j][a.i] + @cells[b.j][b.i]) is N
+  isMaxInSum: () ->
+    (@selectedCell.n() + @clickedCell.n()) is N
 
-  isSelf: (a, b) ->
-    a.i is b.i and a.j is b.j
+  isSelf: () ->
+    @selectedCell.i is @clickedCell.i and @selectedCell.j is @clickedCell.j
 
-  isSameRow: (a, b) ->
-    a.j is b.j
+  isSameRow: () ->
+    @selectedCell.j is @clickedCell.j
 
-  isSameCol: (a, b) ->
-    a.i is b.i
+  isSameCol: () ->
+    @selectedCell.i is @clickedCell.i

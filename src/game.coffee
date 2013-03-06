@@ -23,3 +23,7 @@ class Game
   incrementScore: (n) ->
     @score += n
     @showScore()
+
+  decrementScore: (n) ->
+    @score -= n
+    @showScore()

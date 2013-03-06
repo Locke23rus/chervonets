@@ -1,40 +1,69 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Chervonets</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <link rel="shortcut icon" href="favicon.ico" />
-    <link href='http://fonts.googleapis.com/css?family=Slackey' rel='stylesheet' type='text/css'>
-    <style type="text/css">
-      body {
-        font-family: 'Slackey', cursive;
-        text-align: center;
-        margin: 0;
-      }
+<head>
+  <title>Chervonets</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <link rel="shortcut icon" href="favicon.ico"/>
+  <link href='http://fonts.googleapis.com/css?family=Slackey' rel='stylesheet' type='text/css'>
+  <style type="text/css">
+    body {
+      font-family: 'Slackey', cursive;
+      text-align: center;
+      margin: 0;
+    }
 
-      #game-canvas {
-        border: 2px solid black;
-        margin: 0 auto;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Chervonets</h1>
+    #wrapper {
+      width: 720px;
+      text-align: center;
+      margin: 0 auto;
+    }
 
-    <div id="toolbar">
-      <div id="buttons">
-        <a id="new-game" href="javascript:newGame()">New game</a>
-        <a id="pause" href="javascript:togglePause()">Continue</a>
-      </div>
-      <div id="score-block">
-        Score: <span id="score">0</span>
-        <br/>
-        Best score: <span id="best-score">0</span>
-      </div>
+    #game-canvas {
+      width: 500px;
+      border: 2px solid black;
+      float: left;
+    }
+
+    #toolbar {
+      width: 200px;
+      float: right;
+    }
+
+    #clear {
+      clear: both;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Chervonets</h1>
+
+<div id="wrapper">
+  <canvas id="game-canvas" width="500" height="500"></canvas>
+
+  <div id="toolbar">
+    <div id="buttons">
+      <a id="new-game" href="javascript:newGame()">New game</a>
+      <br/>
+      <br/>
+      <a id="pause" href="javascript:togglePause()">Continue</a>
+      <br/>
+      <br/>
     </div>
 
-    <canvas id="game-canvas" width="500" height="500"></canvas>
+    <div id="score-block">
+      Score:
+      <br/>
+      <span id="score">0</span>
+      <br/><br/>
+      Best score:
+      <br/>
+      <span id="best-score">0</span>
+    </div>
+  </div>
+</div>
+<div id="clear"></div>
 
-    <script src="index.js"></script>
-  </body>
+<script src="index.js"></script>
+</body>
 </html>
