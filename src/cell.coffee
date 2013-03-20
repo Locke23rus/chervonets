@@ -1,6 +1,8 @@
 class Cell
 
   constructor: (@i, @j) ->
+    @x = @i * WIDTH
+    @y = @j * WIDTH
 
   color: ->
     switch @n()
@@ -21,31 +23,25 @@ class Cell
 
   drawBackground: (color) ->
     ctx.fillStyle = color
-    ctx.fillRect @x(), @y(), WIDTH, WIDTH
+    ctx.fillRect @x, @y, WIDTH, WIDTH
     ctx.strokeStyle = "#FFF"
-    ctx.strokeRect @x(), @y(), WIDTH, WIDTH
+    ctx.strokeRect @x, @y, WIDTH, WIDTH
 
   drawNumber: (color) ->
     ctx.fillStyle = color
     ctx.font = "30px monospaced"
     ctx.textBaseline = "middle"
-    ctx.fillText @n(), @x() + 15, @y() + 25
+    ctx.fillText @n(), @x + 15, @y + 25
 
   isEmpty: ->
     not @n()?
 
-  select: ->
+  drawSelect: ->
     @drawBackground "#000066"
     @drawNumber "#FFF"
 
   clear: ->
-    ctx.clearRect @x(), @y(), WIDTH, WIDTH
+    ctx.clearRect @x, @y, WIDTH, WIDTH
 
   n: ->
     board.cells[@j][@i]
-
-  x: ->
-    @i * WIDTH
-
-  y: ->
-    @j * WIDTH

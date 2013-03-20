@@ -1,9 +1,10 @@
 N = 4
 CANVAS_WIDTH = 500
 WIDTH = Math.floor(CANVAS_WIDTH / N)
+FRAME_RATE = 1000 / 30
 canvas = document.getElementById('game-canvas')
 ctx = canvas.getContext('2d')
-game = null
+game = new Game()
 board = null
 
 canvas.addEventListener 'click', ((e) ->
@@ -18,26 +19,16 @@ bestScore = ->
 showBestScore = ->
   document.getElementById('best-score').innerText = bestScore()
 
-checkFinish = ->
-  return  if board.hasBlocks()
-  board.drawFinish()
-  if game.score > bestScore()
-    game.setBestScore()
-    showBestScore()
-
 newGame = ->
+  game.stop()
   game = new Game()
   board = new Board()
-
-  board.fill()
-  board.draw()
+  game.start()
 
 togglePause = ->
   game.togglePause()
 
 init = ->
   showBestScore()
-  newGame()
-
 
 init()

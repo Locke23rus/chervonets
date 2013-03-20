@@ -5,6 +5,7 @@ class Board
     @selectedCell = null
     @clickedCell = null
     @targetCell = null
+    @fill()
 
   randomNumber: ->
     k = 0
@@ -31,7 +32,12 @@ class Board
       i = 0
 
       while i < N
-        new Cell(i, j).draw()  if @cells[j][i]?
+        cell = new Cell(i, j)
+        if cell.n()?
+          if @isSelected(cell)
+            cell.drawSelect()
+          else
+            cell.draw()
         i++
       j++
 
@@ -63,11 +69,9 @@ class Board
 
   insert: (cell, n) ->
     @cells[cell.j][cell.i] = n
-    cell.draw()
 
   remove: (cell) ->
     @cells[cell.j][cell.i] = null
-    cell.clear()
 
   addRandomCell: ->
     @insert @emptyCells().randomElement(),
@@ -108,32 +112,30 @@ class Board
     @clickedCell = new Cell(i, j)
 
     return  if @clickedCell.isEmpty() and not @selectedCell?
-    unless @selectedCell?
-      @selectedCell = @clickedCell
-      @selectedCell.select()
-    else
-      if @isAvailableToMove()
-        if @isSameNumber() or @isMaxInSum()
+    if @selectedCell? and @isAvailableToMove()
+      if @isSameNumber() or @isMaxInSum()
 
-          game.incrementScore @scoreFactor(@hitDistance())
-          @remove @selectedCell
-          @remove @clickedCell
-          @selectedCell = null
-          checkFinish()
-          return
-        else if @clickedCell.isEmpty()
-          @targetCell = @moveCellTarget()
-          @insert @targetCell, @selectedCell.n()
-          game.decrementScore @scoreFactor(@moveDistance())
+        game.incrementScore @scoreFactor(@hitDistance())
+        @remove @selectedCell
+        @remove @clickedCell
+        @selectedCell = null
 
-          @remove @selectedCell
-          @selectedCell = null
-          return
+        unless @hasBlocks()
+          board.drawFinish()
+          game.finish()
 
-      @selectedCell.draw()
+        return
 
-      # TODO: Play wrong sound
-      @selectedCell = null
+      else if @clickedCell.isEmpty()
+        @targetCell = @moveCellTarget()
+        @insert @targetCell, @selectedCell.n()
+        game.decrementScore @scoreFactor(@moveDistance())
+
+        @remove @selectedCell
+        @selectedCell = null
+        return
+
+    @selectedCell = @clickedCell
 
   hitDistance: () ->
     if @isSameRow()
@@ -246,3 +248,6 @@ class Board
 
   isSameCol: () ->
     @selectedCell.i is @clickedCell.i
+
+  isSelected: (cell) ->
+    @selectedCell? and @selectedCell.i is cell.i and @selectedCell.j is cell.j
