@@ -41,7 +41,7 @@ class Board
         i++
       j++
 
-  emptyCells: ->
+  emptyCells: () ->
     a = []
     j = 0
 

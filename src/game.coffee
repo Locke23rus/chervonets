@@ -5,8 +5,10 @@ class Game
     @paused = false
     @showScore()
     @interval = null
-    @remainingTime = 0
+    @remainingTime = TIME
     @timeInterval = null
+    @waveTime = WAVE_TIME * 1000
+    @waveInterval = null
 
   showScore: ->
     document.getElementById('score').innerText = @score.toString()
@@ -33,8 +35,7 @@ class Game
     @score -= n
     @showScore()
 
-  start: (time) ->
-    @remainingTime = time
+  start: () ->
     @showTime()
     @interval = setInterval (() ->
       board.draw()),
@@ -42,6 +43,9 @@ class Game
     @timeInterval = setInterval (() ->
       game.updateTime()),
       1000
+    @waveInterval = setInterval (() ->
+      game.updateWave()),
+      WAVE_RATE
 
   finish: () ->
     @stop()
@@ -52,6 +56,7 @@ class Game
   stop: () ->
     clearInterval @interval
     clearInterval @timeInterval
+    clearInterval @waveInterval
 
   updateTime: () ->
     @remainingTime--
@@ -61,5 +66,17 @@ class Game
       board.drawFinish()
       game.finish()
 
+  updateWave: () ->
+    @waveTime -= WAVE_RATE
+    @showWave()
+
+    if @waveTime is 0
+      if board.emptyCells().length isnt 0
+        board.addRandomCell()
+      @waveTime = WAVE_TIME * 1000
+
   showTime: () ->
     document.getElementById('time').innerText = @remainingTime
+
+  showWave: () ->
+    document.getElementById('wave').style.width = (@waveTime / WAVE_RATE) + 'px'
