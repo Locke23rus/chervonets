@@ -7,16 +7,11 @@ class Board
     @targetCell = null
     @fill()
 
-  randomNumber: ->
-    k = 0
-    k = Math.floor(Math.random() * 10)  while k is 0 or k >= N
-    k
-
   fill: ->
     for j in [0...N]
       @cells.push []
       for i in [0...N]
-        @cells[j][i] = @randomNumber()
+        @cells[j][i] = Number.randomInt(1, 10)
 
   draw: ->
     @clear()

@@ -7,7 +7,7 @@ class Cell
   color: ->
     switch @n()
       when 1 then "#FF6633"
-      when 2 then "#FF3333"
+      when 2 then "#66CCFF"
       when 3 then "#FF66FF"
       when 4 then "#CC99FF"
       when 5 then "#CCCCFF"
@@ -15,6 +15,7 @@ class Cell
       when 7 then "#FFFF66"
       when 8 then "#66CC66"
       when 9 then "#CCFF66"
+      when 10 then "#FF3333"
       else "#FFF"
 
   draw: ->
@@ -31,7 +32,10 @@ class Cell
     ctx.fillStyle = color
     ctx.font = "30px monospaced"
     ctx.textBaseline = "middle"
-    ctx.fillText @n(), @x + 15, @y + 25
+    if @n() is 10
+      ctx.fillText @n(), @x + 8, @y + 25
+    else
+      ctx.fillText @n(), @x + 15, @y + 25
 
   isEmpty: ->
     not @n()?

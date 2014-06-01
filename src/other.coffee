@@ -29,7 +29,7 @@ newGame = ->
   game.start()
 
 togglePause = ->
-  game.togglePause()
+  game.togglePause() if game?
 
 init = ->
   showBestScore()

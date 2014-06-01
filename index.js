@@ -20,15 +20,6 @@ Board = (function() {
     this.fill();
   }
 
-  Board.prototype.randomNumber = function() {
-    var k;
-    k = 0;
-    while (k === 0 || k >= N) {
-      k = Math.floor(Math.random() * 10);
-    }
-    return k;
-  };
-
   Board.prototype.fill = function() {
     var i, j, _i, _results;
     _results = [];
@@ -38,7 +29,7 @@ Board = (function() {
         var _j, _results1;
         _results1 = [];
         for (i = _j = 0; 0 <= N ? _j < N : _j > N; i = 0 <= N ? ++_j : --_j) {
-          _results1.push(this.cells[j][i] = this.randomNumber());
+          _results1.push(this.cells[j][i] = Number.randomInt(1, 10));
         }
         return _results1;
       }).call(this));
@@ -334,7 +325,7 @@ Cell = (function() {
       case 1:
         return "#FF6633";
       case 2:
-        return "#FF3333";
+        return "#66CCFF";
       case 3:
         return "#FF66FF";
       case 4:
@@ -349,6 +340,8 @@ Cell = (function() {
         return "#66CC66";
       case 9:
         return "#CCFF66";
+      case 10:
+        return "#FF3333";
       default:
         return "#FFF";
     }
@@ -370,7 +363,11 @@ Cell = (function() {
     ctx.fillStyle = color;
     ctx.font = "30px monospaced";
     ctx.textBaseline = "middle";
-    return ctx.fillText(this.n(), this.x + 15, this.y + 25);
+    if (this.n() === 10) {
+      return ctx.fillText(this.n(), this.x + 8, this.y + 25);
+    } else {
+      return ctx.fillText(this.n(), this.x + 15, this.y + 25);
+    }
   };
 
   Cell.prototype.isEmpty = function() {
@@ -496,6 +493,15 @@ Game = (function() {
 
 })();
 
+Number.randomInt = function(a, z) {
+  var x;
+  x = a - 1;
+  while (x < a || x > z) {
+    x = Math.floor(Math.random() * 10) + 1;
+  }
+  return x;
+};
+
 N = 10;
 
 CANVAS_WIDTH = 500;
@@ -540,7 +546,9 @@ newGame = function() {
 };
 
 togglePause = function() {
-  return game.togglePause();
+  if (game != null) {
+    return game.togglePause();
+  }
 };
 
 init = function() {
