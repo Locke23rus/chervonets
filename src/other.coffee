@@ -1,13 +1,13 @@
-N = 4
+N = 10
 CANVAS_WIDTH = 500
-WIDTH = Math.floor(CANVAS_WIDTH / N)
+WIDTH = CANVAS_WIDTH // N
 FRAME_RATE = 1000 / 30
-TIME = 60
-WAVE_TIME = 5
+TIME = 250
+WAVE_TIME = 10
 WAVE_RATE = WAVE_TIME * 10
 canvas = document.getElementById('game-canvas')
 ctx = canvas.getContext('2d')
-game = new Game()
+game = null
 board = null
 
 canvas.addEventListener 'click', ((e) ->
@@ -23,7 +23,7 @@ showBestScore = ->
   document.getElementById('best-score').innerText = bestScore()
 
 newGame = ->
-  game.stop()
+  game.stop() if game?
   game = new Game()
   board = new Board()
   game.start()

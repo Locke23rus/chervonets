@@ -508,7 +508,7 @@ Game = (function() {
 
 })();
 
-N = 4;
+N = 10;
 
 CANVAS_WIDTH = 500;
 
@@ -516,9 +516,9 @@ WIDTH = Math.floor(CANVAS_WIDTH / N);
 
 FRAME_RATE = 1000 / 30;
 
-TIME = 60;
+TIME = 250;
 
-WAVE_TIME = 5;
+WAVE_TIME = 10;
 
 WAVE_RATE = WAVE_TIME * 10;
 
@@ -526,7 +526,7 @@ canvas = document.getElementById('game-canvas');
 
 ctx = canvas.getContext('2d');
 
-game = new Game();
+game = null;
 
 board = null;
 
@@ -543,7 +543,9 @@ showBestScore = function() {
 };
 
 newGame = function() {
-  game.stop();
+  if (game != null) {
+    game.stop();
+  }
   game = new Game();
   board = new Board();
   return game.start();
