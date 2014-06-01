@@ -1,5 +1,4 @@
-TODO
-----
+# TODO
 
 * Use directions instead of cells for movement.
 * Animate movement
@@ -8,4 +7,3 @@ TODO
 * Pause on 'Space'
 * Add swipes
 * Pause when switch to another tab
-* Reset selection when click on the selected cell

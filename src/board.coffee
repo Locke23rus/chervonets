@@ -76,28 +76,32 @@ class Board
     @clickedCell = new Cell(i, j)
 
     return  if @clickedCell.isEmpty() and not @selectedCell?
-    if @selectedCell? and @isAvailableToMove()
-      if @isSameNumber()
-
-        game.incrementScore @scoreFactor(@hitDistance())
-        @remove @selectedCell
-        @remove @clickedCell
-        @selectedCell = null
-
-        unless @hasBlocks()
-          board.drawFinish()
-          game.finish()
-
-        return
-
-      else if @clickedCell.isEmpty()
-        @targetCell = @moveCellTarget()
-        @insert @targetCell, @selectedCell.n()
-        game.decrementScore @scoreFactor(@moveDistance())
-
-        @remove @selectedCell
+    if @selectedCell?
+      if @isSelf()
         @selectedCell = null
         return
+      else if @isAvailableToMove()
+        if @isSameNumber()
+
+          game.incrementScore @scoreFactor(@hitDistance())
+          @remove @selectedCell
+          @remove @clickedCell
+          @selectedCell = null
+
+          unless @hasBlocks()
+            board.drawFinish()
+            game.finish()
+
+          return
+
+        else if @clickedCell.isEmpty()
+          @targetCell = @moveCellTarget()
+          @insert @targetCell, @selectedCell.n()
+          game.decrementScore @scoreFactor(@moveDistance())
+
+          @remove @selectedCell
+          @selectedCell = null
+          return
 
     @selectedCell = @clickedCell
 

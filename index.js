@@ -141,24 +141,29 @@ Board = (function() {
     if (this.clickedCell.isEmpty() && (this.selectedCell == null)) {
       return;
     }
-    if ((this.selectedCell != null) && this.isAvailableToMove()) {
-      if (this.isSameNumber()) {
-        game.incrementScore(this.scoreFactor(this.hitDistance()));
-        this.remove(this.selectedCell);
-        this.remove(this.clickedCell);
+    if (this.selectedCell != null) {
+      if (this.isSelf()) {
         this.selectedCell = null;
-        if (!this.hasBlocks()) {
-          board.drawFinish();
-          game.finish();
+        return;
+      } else if (this.isAvailableToMove()) {
+        if (this.isSameNumber()) {
+          game.incrementScore(this.scoreFactor(this.hitDistance()));
+          this.remove(this.selectedCell);
+          this.remove(this.clickedCell);
+          this.selectedCell = null;
+          if (!this.hasBlocks()) {
+            board.drawFinish();
+            game.finish();
+          }
+          return;
+        } else if (this.clickedCell.isEmpty()) {
+          this.targetCell = this.moveCellTarget();
+          this.insert(this.targetCell, this.selectedCell.n());
+          game.decrementScore(this.scoreFactor(this.moveDistance()));
+          this.remove(this.selectedCell);
+          this.selectedCell = null;
+          return;
         }
-        return;
-      } else if (this.clickedCell.isEmpty()) {
-        this.targetCell = this.moveCellTarget();
-        this.insert(this.targetCell, this.selectedCell.n());
-        game.decrementScore(this.scoreFactor(this.moveDistance()));
-        this.remove(this.selectedCell);
-        this.selectedCell = null;
-        return;
       }
     }
     return this.selectedCell = this.clickedCell;
