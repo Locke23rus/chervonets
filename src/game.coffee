@@ -21,11 +21,9 @@ class Game
     if @paused
       @stop()
       board.drawPaused()
-      document.getElementById('pause').innerText = 'Continue'
     else
       @start()
       board.draw()
-      document.getElementById('pause').innerText = 'Pause'
 
   incrementScore: (n) ->
     @score += n
@@ -36,6 +34,7 @@ class Game
     @showScore()
 
   start: () ->
+    document.getElementById('pause').innerText = 'Pause'
     @showTime()
     @interval = setInterval (() ->
       board.draw()),
@@ -54,6 +53,7 @@ class Game
       showBestScore()
 
   stop: () ->
+    document.getElementById('pause').innerText = 'Continue'
     clearInterval @interval
     clearInterval @timeInterval
     clearInterval @waveInterval

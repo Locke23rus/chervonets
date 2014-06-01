@@ -420,12 +420,10 @@ Game = (function() {
     this.paused = !this.paused;
     if (this.paused) {
       this.stop();
-      board.drawPaused();
-      return document.getElementById('pause').innerText = 'Continue';
+      return board.drawPaused();
     } else {
       this.start();
-      board.draw();
-      return document.getElementById('pause').innerText = 'Pause';
+      return board.draw();
     }
   };
 
@@ -440,6 +438,7 @@ Game = (function() {
   };
 
   Game.prototype.start = function() {
+    document.getElementById('pause').innerText = 'Pause';
     this.showTime();
     this.interval = setInterval((function() {
       return board.draw();
@@ -461,6 +460,7 @@ Game = (function() {
   };
 
   Game.prototype.stop = function() {
+    document.getElementById('pause').innerText = 'Continue';
     clearInterval(this.interval);
     clearInterval(this.timeInterval);
     return clearInterval(this.waveInterval);
