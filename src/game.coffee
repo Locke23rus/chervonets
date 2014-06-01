@@ -5,6 +5,8 @@ class Game
     @paused = false
     @showScore()
     @interval = null
+    @remainingTime = 0
+    @timeInterval = null
 
   showScore: ->
     document.getElementById('score').innerText = @score.toString()
@@ -19,7 +21,7 @@ class Game
       board.drawPaused()
       document.getElementById('pause').innerText = 'Continue'
     else
-      @start(0)
+      @start()
       board.draw()
       document.getElementById('pause').innerText = 'Pause'
 
@@ -31,10 +33,15 @@ class Game
     @score -= n
     @showScore()
 
-  start: () ->
+  start: (time) ->
+    @remainingTime = time
+    @showTime()
     @interval = setInterval (() ->
       board.draw()),
       FRAME_RATE
+    @timeInterval = setInterval (() ->
+      game.updateTime()),
+      1000
 
   finish: () ->
     @stop()
@@ -44,5 +51,15 @@ class Game
 
   stop: () ->
     clearInterval @interval
+    clearInterval @timeInterval
 
+  updateTime: () ->
+    @remainingTime--
+    @showTime()
 
+    if @remainingTime is 0
+      board.drawFinish()
+      game.finish()
+
+  showTime: () ->
+    document.getElementById('time').innerText = @remainingTime

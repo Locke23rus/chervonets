@@ -2,6 +2,7 @@ N = 4
 CANVAS_WIDTH = 500
 WIDTH = Math.floor(CANVAS_WIDTH / N)
 FRAME_RATE = 1000 / 30
+TIME = 60
 canvas = document.getElementById('game-canvas')
 ctx = canvas.getContext('2d')
 game = new Game()
@@ -23,7 +24,7 @@ newGame = ->
   game.stop()
   game = new Game()
   board = new Board()
-  game.start()
+  game.start(TIME)
 
 togglePause = ->
   game.togglePause()

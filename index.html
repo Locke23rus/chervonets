@@ -32,6 +32,22 @@
     #clear {
       clear: both;
     }
+
+    #wave-area, #wave {
+      display: inline-block;
+      line-height: 0;
+      height: 10px;
+      width: 100px;
+    }
+
+    #wave-area {
+      text-align: left;
+      border: 1px solid black;
+    }
+
+    #wave {
+      background-color: gray;
+    }
   </style>
 </head>
 <body>
@@ -43,10 +59,10 @@
 
   <div id="toolbar">
     <div id="buttons">
-      <a id="new-game" href="javascript:newGame()">New game</a>
+      <a id="new-game" href="#" onclick="newGame()">New game</a>
       <br/>
       <br/>
-      <a id="pause" href="javascript:togglePause()">Pause</a>
+      <a id="pause" href="#" onclick="togglePause()">Pause</a>
       <br/>
       <br/>
     </div>
@@ -59,6 +75,12 @@
       Best score:
       <br/>
       <span id="best-score">0</span>
+      <br/><br/>
+      Time:
+      <br/>
+      <span id="time">0</span>
+      <br/>
+      <span id="wave-area"><span id="wave"></span></span>
     </div>
   </div>
 </div>
