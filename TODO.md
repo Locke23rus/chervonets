@@ -7,3 +7,4 @@
 * Pause on 'Space'
 * Add swipes
 * Pause when switch to another tab
+* Reset pause button when start new game
