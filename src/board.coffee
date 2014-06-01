@@ -13,58 +13,34 @@ class Board
     k
 
   fill: ->
-    j = 0
-
-    while j < N
+    for j in [0...N]
       @cells.push []
-      i = 0
-
-      while i < N
+      for i in [0...N]
         @cells[j][i] = @randomNumber()
-        i++
-      j++
 
   draw: ->
     @clear()
-    j = 0
-
-    while j < N
-      i = 0
-
-      while i < N
+    for j in [0...N]
+      for i in [0...N]
         cell = new Cell(i, j)
         if cell.n()?
           if @isSelected(cell)
             cell.drawSelect()
           else
             cell.draw()
-        i++
-      j++
 
   emptyCells: () ->
     a = []
-    j = 0
-
-    while j < N
-      i = 0
-
-      while i < N
+    for j in [0...N]
+      for i in [0...N]
         a.push new Cell(i, j)  unless @cells[j][i]?
-        i++
-      j++
     a
 
   availableNumbers: ->
     a = []
-    j = 0
-
-    while j < N
-      i = 0
-
-      while i < N
-        a.push @cells[j][i]  if @cells[j][i]
-        i++
-      j++
+    for j in [0...N]
+      for i in [0...N]
+            a.push @cells[j][i]  if @cells[j][i]
     a.unique()
 
   insert: (cell, n) ->
@@ -78,16 +54,9 @@ class Board
             @availableNumbers().randomElement()
 
   hasBlocks: ->
-    j = 0
-
-    while j < N
-      i = 0
-
-      while i < N
+    for j in [0...N]
+      for i in [0...N]
         return true if @cells[j][i]?
-        i++
-      j++
-
     false
 
   clear: ->
@@ -107,13 +76,13 @@ class Board
     ctx.fillText text, CANVAS_WIDTH / 2 - 85, CANVAS_WIDTH / 2
 
   click: (x, y) ->
-    i = Math.floor(x / WIDTH)
-    j = Math.floor(y / WIDTH)
+    i = x // WIDTH
+    j = y // WIDTH
     @clickedCell = new Cell(i, j)
 
     return  if @clickedCell.isEmpty() and not @selectedCell?
     if @selectedCell? and @isAvailableToMove()
-      if @isSameNumber() or @isMaxInSum()
+      if @isSameNumber()
 
         game.incrementScore @scoreFactor(@hitDistance())
         @remove @selectedCell
@@ -236,9 +205,6 @@ class Board
 
   isSameNumber: () ->
     @selectedCell.n() is @clickedCell.n()
-
-  isMaxInSum: () ->
-    (@selectedCell.n() + @clickedCell.n()) is N
 
   isSelf: () ->
     @selectedCell.i is @clickedCell.i and @selectedCell.j is @clickedCell.j

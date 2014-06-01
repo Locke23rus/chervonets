@@ -30,74 +30,70 @@ Board = (function() {
   };
 
   Board.prototype.fill = function() {
-    var i, j, _results;
-    j = 0;
+    var i, j, _i, _results;
     _results = [];
-    while (j < N) {
+    for (j = _i = 0; 0 <= N ? _i < N : _i > N; j = 0 <= N ? ++_i : --_i) {
       this.cells.push([]);
-      i = 0;
-      while (i < N) {
-        this.cells[j][i] = this.randomNumber();
-        i++;
-      }
-      _results.push(j++);
+      _results.push((function() {
+        var _j, _results1;
+        _results1 = [];
+        for (i = _j = 0; 0 <= N ? _j < N : _j > N; i = 0 <= N ? ++_j : --_j) {
+          _results1.push(this.cells[j][i] = this.randomNumber());
+        }
+        return _results1;
+      }).call(this));
     }
     return _results;
   };
 
   Board.prototype.draw = function() {
-    var cell, i, j, _results;
+    var cell, i, j, _i, _results;
     this.clear();
-    j = 0;
     _results = [];
-    while (j < N) {
-      i = 0;
-      while (i < N) {
-        cell = new Cell(i, j);
-        if (cell.n() != null) {
-          if (this.isSelected(cell)) {
-            cell.drawSelect();
+    for (j = _i = 0; 0 <= N ? _i < N : _i > N; j = 0 <= N ? ++_i : --_i) {
+      _results.push((function() {
+        var _j, _results1;
+        _results1 = [];
+        for (i = _j = 0; 0 <= N ? _j < N : _j > N; i = 0 <= N ? ++_j : --_j) {
+          cell = new Cell(i, j);
+          if (cell.n() != null) {
+            if (this.isSelected(cell)) {
+              _results1.push(cell.drawSelect());
+            } else {
+              _results1.push(cell.draw());
+            }
           } else {
-            cell.draw();
+            _results1.push(void 0);
           }
         }
-        i++;
-      }
-      _results.push(j++);
+        return _results1;
+      }).call(this));
     }
     return _results;
   };
 
   Board.prototype.emptyCells = function() {
-    var a, i, j;
+    var a, i, j, _i, _j;
     a = [];
-    j = 0;
-    while (j < N) {
-      i = 0;
-      while (i < N) {
+    for (j = _i = 0; 0 <= N ? _i < N : _i > N; j = 0 <= N ? ++_i : --_i) {
+      for (i = _j = 0; 0 <= N ? _j < N : _j > N; i = 0 <= N ? ++_j : --_j) {
         if (this.cells[j][i] == null) {
           a.push(new Cell(i, j));
         }
-        i++;
       }
-      j++;
     }
     return a;
   };
 
   Board.prototype.availableNumbers = function() {
-    var a, i, j;
+    var a, i, j, _i, _j;
     a = [];
-    j = 0;
-    while (j < N) {
-      i = 0;
-      while (i < N) {
+    for (j = _i = 0; 0 <= N ? _i < N : _i > N; j = 0 <= N ? ++_i : --_i) {
+      for (i = _j = 0; 0 <= N ? _j < N : _j > N; i = 0 <= N ? ++_j : --_j) {
         if (this.cells[j][i]) {
           a.push(this.cells[j][i]);
         }
-        i++;
       }
-      j++;
     }
     return a.unique();
   };
@@ -115,17 +111,13 @@ Board = (function() {
   };
 
   Board.prototype.hasBlocks = function() {
-    var i, j;
-    j = 0;
-    while (j < N) {
-      i = 0;
-      while (i < N) {
+    var i, j, _i, _j;
+    for (j = _i = 0; 0 <= N ? _i < N : _i > N; j = 0 <= N ? ++_i : --_i) {
+      for (i = _j = 0; 0 <= N ? _j < N : _j > N; i = 0 <= N ? ++_j : --_j) {
         if (this.cells[j][i] != null) {
           return true;
         }
-        i++;
       }
-      j++;
     }
     return false;
   };
@@ -159,7 +151,7 @@ Board = (function() {
       return;
     }
     if ((this.selectedCell != null) && this.isAvailableToMove()) {
-      if (this.isSameNumber() || this.isMaxInSum()) {
+      if (this.isSameNumber()) {
         game.incrementScore(this.scoreFactor(this.hitDistance()));
         this.remove(this.selectedCell);
         this.remove(this.clickedCell);
@@ -307,10 +299,6 @@ Board = (function() {
 
   Board.prototype.isSameNumber = function() {
     return this.selectedCell.n() === this.clickedCell.n();
-  };
-
-  Board.prototype.isMaxInSum = function() {
-    return (this.selectedCell.n() + this.clickedCell.n()) === N;
   };
 
   Board.prototype.isSelf = function() {
