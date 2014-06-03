@@ -11,7 +11,7 @@ game = null
 board = null
 
 canvas.addEventListener 'click', ((e) ->
-  board.click(e.offsetX, e.offsetY)
+  board.click(e.offsetX, e.offsetY) if game? and not game.finished
 ), false
 
 

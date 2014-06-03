@@ -580,7 +580,9 @@ game = null;
 board = null;
 
 canvas.addEventListener('click', (function(e) {
-  return board.click(e.offsetX, e.offsetY);
+  if ((game != null) && !game.finished) {
+    return board.click(e.offsetX, e.offsetY);
+  }
 }), false);
 
 bestScore = function() {
