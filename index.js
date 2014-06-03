@@ -585,6 +585,12 @@ canvas.addEventListener('click', (function(e) {
   }
 }), false);
 
+addEventListener('keyup', function(e) {
+  if (e.keyCode === 32) {
+    return togglePause();
+  }
+});
+
 bestScore = function() {
   return parseInt(localStorage.getItem('best_score') || 0, 10);
 };

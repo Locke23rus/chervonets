@@ -14,6 +14,8 @@ canvas.addEventListener 'click', ((e) ->
   board.click(e.offsetX, e.offsetY) if game? and not game.finished
 ), false
 
+addEventListener 'keyup', (e) ->
+  togglePause() if e.keyCode is 32
 
 bestScore = ->
   parseInt localStorage.getItem('best_score') or 0,
