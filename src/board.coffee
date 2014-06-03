@@ -1,5 +1,10 @@
 class Board
 
+  UP = 0
+  RIGHT = 1
+  DOWN = 2
+  LEFT = 3
+
   constructor: ->
     @cells = []
     @selectedCell = null
@@ -75,41 +80,111 @@ class Board
     j = y // WIDTH
     @clickedCell = new Cell(i, j)
 
-    return  if @clickedCell.isEmpty() and not @selectedCell?
+    return if @clickedCell.isEmpty() and not @selectedCell?
     if @selectedCell?
       if @isSelf()
         @selectedCell = null
         return
-      else if @isAvailableToMove()
-        if @isSameNumber()
-
+      else if @isSameCol() or @isSameRow()
+        if @canHit()
           game.incrementScore @scoreFactor(@hitDistance())
           @remove @selectedCell
-          @remove @clickedCell
+          @remove @targetCell
           @selectedCell = null
+          @targetCell = null
 
           unless @hasBlocks()
             board.drawFinish()
             game.finish()
 
           return
-
-        else if @clickedCell.isEmpty()
-          @targetCell = @moveCellTarget()
-          @insert @targetCell, @selectedCell.n()
+        else if @canMove()
           game.decrementScore @scoreFactor(@moveDistance())
-
+          @insert @targetCell, @selectedCell.n()
           @remove @selectedCell
+
           @selectedCell = null
+          @targetCell = null
           return
 
     @selectedCell = @clickedCell
 
+
+  direction: ->
+    if @isSameRow()
+      if @selectedCell.i > @clickedCell.i then LEFT else RIGHT
+    else
+      if @selectedCell.j > @clickedCell.j then UP else DOWN
+
+  canHitColl: (colls) ->
+    for j in colls
+      cell = new Cell(@selectedCell.i, j)
+      if cell.n()?
+        if @selectedCell.n() is cell.n()
+          @targetCell = cell
+          return true
+        else
+          return false
+    false
+
+  canHitRow: (rows) ->
+    for i in rows
+      cell = new Cell(i, @selectedCell.j)
+      if cell.n()?
+        if @selectedCell.n() is cell.n()
+          @targetCell = cell
+          return true
+        else
+          return false
+    false
+
+  canHit: ->
+    switch @direction()
+      when UP
+        return @canHitColl([@selectedCell.j-1..0])
+      when DOWN
+        return @canHitColl([@selectedCell.j+1...N])
+      when LEFT
+        return @canHitRow([@selectedCell.i-1..0])
+      when RIGHT
+        return @canHitRow([@selectedCell.i+1..N])
+    false
+
+  canMoveColl: (colls) ->
+    for j in colls
+      cell = new Cell(@selectedCell.i, j)
+      if cell.n()?
+        return @targetCell?
+      else
+        @targetCell = cell
+    @targetCell?
+
+  canMoveRow: (rows) ->
+    for i in rows
+      cell = new Cell(i, @selectedCell.j)
+      if cell.n()?
+        return @targetCell?
+      else
+        @targetCell = cell
+    @targetCell?
+
+  canMove: ->
+    switch @direction()
+      when UP
+        return @canMoveColl([@selectedCell.j-1..0])
+      when DOWN
+        return @canMoveColl([@selectedCell.j+1...N])
+      when LEFT
+        return @canMoveRow([@selectedCell.i-1..0])
+      when RIGHT
+        return @canMoveRow([@selectedCell.i+1...N])
+    false
+
   hitDistance: () ->
     if @isSameRow()
-      Math.abs(@clickedCell.i - @selectedCell.i) + 1
+      Math.abs(@targetCell.i - @selectedCell.i) + 1
     else
-      Math.abs(@clickedCell.j - @selectedCell.j) + 1
+      Math.abs(@targetCell.j - @selectedCell.j) + 1
 
   moveDistance: () ->
     if @isSameRow()
@@ -117,93 +192,10 @@ class Board
     else
       Math.abs(@targetCell.j - @selectedCell.j)
 
-
   scoreFactor: (n) ->
     sum = 0
-    i = 0
-    while i <= n
-      sum += i
-      i++
-
+    sum += i for i in [0..n]
     sum
-
-  moveCellTarget: () ->
-    t = undefined
-    i = undefined
-    j = undefined
-    if @isSameRow()
-      if @clickedCell.i > @selectedCell.i
-        i = @clickedCell.i
-        while i < N
-          unless @cells[@selectedCell.j][i]?
-            t = i
-          else
-            break
-          i++
-      else
-        i = @clickedCell.i
-        while i >= 0
-          unless @cells[@selectedCell.j][i]?
-            t = i
-          else
-            break
-          i--
-      new Cell(t, @selectedCell.j)
-    else
-      if @clickedCell.j > @selectedCell.j
-        j = @clickedCell.j
-        while j < N
-          unless @cells[j][@selectedCell.i]?
-            t = j
-          else
-            break
-          j++
-      else
-        j = @clickedCell.j
-        while j >= 0
-          unless @cells[j][@selectedCell.i]?
-            t = j
-          else
-            break
-          j--
-      new Cell(@selectedCell.i, t)
-
-  isAvailableToMove: () ->
-    return false unless @isSameRow() or @isSameCol()
-    min = undefined
-    max = undefined
-    if @isSelf()
-      return false
-    else if @isSameRow()
-      min = Math.min(@selectedCell.i, @clickedCell.i)
-      max = Math.max(@selectedCell.i, @clickedCell.i)
-      if (min + 1) is max
-        return true
-      else
-        i = min + 1
-
-        while i < max
-          return false if @cells[@selectedCell.j][i]?
-          i++
-
-        return true
-    else if @isSameCol()
-      min = Math.min(@selectedCell.j, @clickedCell.j)
-      max = Math.max(@selectedCell.j, @clickedCell.j)
-      if (min + 1) is max
-        return true
-      else
-        j = min + 1
-
-        while j < max
-          return false  if @cells[j][@selectedCell.i]?
-          j++
-
-        return true
-    false
-
-  isSameNumber: () ->
-    @selectedCell.n() is @clickedCell.n()
 
   isSelf: () ->
     @selectedCell.i is @clickedCell.i and @selectedCell.j is @clickedCell.j

@@ -12,6 +12,16 @@ Array.prototype.randomElement = function() {
 };
 
 Board = (function() {
+  var DOWN, LEFT, RIGHT, UP;
+
+  UP = 0;
+
+  RIGHT = 1;
+
+  DOWN = 2;
+
+  LEFT = 3;
+
   function Board() {
     this.cells = [];
     this.selectedCell = null;
@@ -145,23 +155,24 @@ Board = (function() {
       if (this.isSelf()) {
         this.selectedCell = null;
         return;
-      } else if (this.isAvailableToMove()) {
-        if (this.isSameNumber()) {
+      } else if (this.isSameCol() || this.isSameRow()) {
+        if (this.canHit()) {
           game.incrementScore(this.scoreFactor(this.hitDistance()));
           this.remove(this.selectedCell);
-          this.remove(this.clickedCell);
+          this.remove(this.targetCell);
           this.selectedCell = null;
+          this.targetCell = null;
           if (!this.hasBlocks()) {
             board.drawFinish();
             game.finish();
           }
           return;
-        } else if (this.clickedCell.isEmpty()) {
-          this.targetCell = this.moveCellTarget();
-          this.insert(this.targetCell, this.selectedCell.n());
+        } else if (this.canMove()) {
           game.decrementScore(this.scoreFactor(this.moveDistance()));
+          this.insert(this.targetCell, this.selectedCell.n());
           this.remove(this.selectedCell);
           this.selectedCell = null;
+          this.targetCell = null;
           return;
         }
       }
@@ -169,11 +180,151 @@ Board = (function() {
     return this.selectedCell = this.clickedCell;
   };
 
+  Board.prototype.direction = function() {
+    if (this.isSameRow()) {
+      if (this.selectedCell.i > this.clickedCell.i) {
+        return LEFT;
+      } else {
+        return RIGHT;
+      }
+    } else {
+      if (this.selectedCell.j > this.clickedCell.j) {
+        return UP;
+      } else {
+        return DOWN;
+      }
+    }
+  };
+
+  Board.prototype.canHitColl = function(colls) {
+    var cell, j, _i, _len;
+    for (_i = 0, _len = colls.length; _i < _len; _i++) {
+      j = colls[_i];
+      cell = new Cell(this.selectedCell.i, j);
+      if (cell.n() != null) {
+        if (this.selectedCell.n() === cell.n()) {
+          this.targetCell = cell;
+          return true;
+        } else {
+          return false;
+        }
+      }
+    }
+    return false;
+  };
+
+  Board.prototype.canHitRow = function(rows) {
+    var cell, i, _i, _len;
+    for (_i = 0, _len = rows.length; _i < _len; _i++) {
+      i = rows[_i];
+      cell = new Cell(i, this.selectedCell.j);
+      if (cell.n() != null) {
+        if (this.selectedCell.n() === cell.n()) {
+          this.targetCell = cell;
+          return true;
+        } else {
+          return false;
+        }
+      }
+    }
+    return false;
+  };
+
+  Board.prototype.canHit = function() {
+    var _i, _j, _k, _l, _ref, _ref1, _ref2, _ref3, _results, _results1, _results2, _results3;
+    switch (this.direction()) {
+      case UP:
+        return this.canHitColl((function() {
+          _results = [];
+          for (var _i = _ref = this.selectedCell.j - 1; _ref <= 0 ? _i <= 0 : _i >= 0; _ref <= 0 ? _i++ : _i--){ _results.push(_i); }
+          return _results;
+        }).apply(this));
+      case DOWN:
+        return this.canHitColl((function() {
+          _results1 = [];
+          for (var _j = _ref1 = this.selectedCell.j + 1; _ref1 <= N ? _j < N : _j > N; _ref1 <= N ? _j++ : _j--){ _results1.push(_j); }
+          return _results1;
+        }).apply(this));
+      case LEFT:
+        return this.canHitRow((function() {
+          _results2 = [];
+          for (var _k = _ref2 = this.selectedCell.i - 1; _ref2 <= 0 ? _k <= 0 : _k >= 0; _ref2 <= 0 ? _k++ : _k--){ _results2.push(_k); }
+          return _results2;
+        }).apply(this));
+      case RIGHT:
+        return this.canHitRow((function() {
+          _results3 = [];
+          for (var _l = _ref3 = this.selectedCell.i + 1; _ref3 <= N ? _l <= N : _l >= N; _ref3 <= N ? _l++ : _l--){ _results3.push(_l); }
+          return _results3;
+        }).apply(this));
+    }
+    return false;
+  };
+
+  Board.prototype.canMoveColl = function(colls) {
+    var cell, j, _i, _len;
+    for (_i = 0, _len = colls.length; _i < _len; _i++) {
+      j = colls[_i];
+      cell = new Cell(this.selectedCell.i, j);
+      if (cell.n() != null) {
+        return this.targetCell != null;
+      } else {
+        this.targetCell = cell;
+      }
+    }
+    return this.targetCell != null;
+  };
+
+  Board.prototype.canMoveRow = function(rows) {
+    var cell, i, _i, _len;
+    for (_i = 0, _len = rows.length; _i < _len; _i++) {
+      i = rows[_i];
+      cell = new Cell(i, this.selectedCell.j);
+      if (cell.n() != null) {
+        return this.targetCell != null;
+      } else {
+        this.targetCell = cell;
+      }
+    }
+    return this.targetCell != null;
+  };
+
+  Board.prototype.canMove = function() {
+    var _i, _j, _k, _l, _ref, _ref1, _ref2, _ref3, _results, _results1, _results2, _results3;
+    switch (this.direction()) {
+      case UP:
+        return this.canMoveColl((function() {
+          _results = [];
+          for (var _i = _ref = this.selectedCell.j - 1; _ref <= 0 ? _i <= 0 : _i >= 0; _ref <= 0 ? _i++ : _i--){ _results.push(_i); }
+          return _results;
+        }).apply(this));
+      case DOWN:
+        return this.canMoveColl((function() {
+          _results1 = [];
+          for (var _j = _ref1 = this.selectedCell.j + 1; _ref1 <= N ? _j < N : _j > N; _ref1 <= N ? _j++ : _j--){ _results1.push(_j); }
+          return _results1;
+        }).apply(this));
+      case LEFT:
+        return this.canMoveRow((function() {
+          _results2 = [];
+          for (var _k = _ref2 = this.selectedCell.i - 1; _ref2 <= 0 ? _k <= 0 : _k >= 0; _ref2 <= 0 ? _k++ : _k--){ _results2.push(_k); }
+          return _results2;
+        }).apply(this));
+      case RIGHT:
+        return this.canMoveRow((function() {
+          _results3 = [];
+          for (var _l = _ref3 = this.selectedCell.i + 1; _ref3 <= N ? _l < N : _l > N; _ref3 <= N ? _l++ : _l--){ _results3.push(_l); }
+          return _results3;
+        }).apply(this));
+    }
+    return false;
+  };
+
   Board.prototype.hitDistance = function() {
     if (this.isSameRow()) {
-      return Math.abs(this.clickedCell.i - this.selectedCell.i) + 1;
+      return Math.abs(this.targetCell.i - this.selectedCell.i) + 1;
     } else {
-      return Math.abs(this.clickedCell.j - this.selectedCell.j) + 1;
+      return Math.abs(this.targetCell.j - this.selectedCell.j) + 1;
     }
   };
 
@@ -186,115 +337,12 @@ Board = (function() {
   };
 
   Board.prototype.scoreFactor = function(n) {
-    var i, sum;
+    var i, sum, _i;
     sum = 0;
-    i = 0;
-    while (i <= n) {
+    for (i = _i = 0; 0 <= n ? _i <= n : _i >= n; i = 0 <= n ? ++_i : --_i) {
       sum += i;
-      i++;
     }
     return sum;
-  };
-
-  Board.prototype.moveCellTarget = function() {
-    var i, j, t;
-    t = void 0;
-    i = void 0;
-    j = void 0;
-    if (this.isSameRow()) {
-      if (this.clickedCell.i > this.selectedCell.i) {
-        i = this.clickedCell.i;
-        while (i < N) {
-          if (this.cells[this.selectedCell.j][i] == null) {
-            t = i;
-          } else {
-            break;
-          }
-          i++;
-        }
-      } else {
-        i = this.clickedCell.i;
-        while (i >= 0) {
-          if (this.cells[this.selectedCell.j][i] == null) {
-            t = i;
-          } else {
-            break;
-          }
-          i--;
-        }
-      }
-      return new Cell(t, this.selectedCell.j);
-    } else {
-      if (this.clickedCell.j > this.selectedCell.j) {
-        j = this.clickedCell.j;
-        while (j < N) {
-          if (this.cells[j][this.selectedCell.i] == null) {
-            t = j;
-          } else {
-            break;
-          }
-          j++;
-        }
-      } else {
-        j = this.clickedCell.j;
-        while (j >= 0) {
-          if (this.cells[j][this.selectedCell.i] == null) {
-            t = j;
-          } else {
-            break;
-          }
-          j--;
-        }
-      }
-      return new Cell(this.selectedCell.i, t);
-    }
-  };
-
-  Board.prototype.isAvailableToMove = function() {
-    var i, j, max, min;
-    if (!(this.isSameRow() || this.isSameCol())) {
-      return false;
-    }
-    min = void 0;
-    max = void 0;
-    if (this.isSelf()) {
-      return false;
-    } else if (this.isSameRow()) {
-      min = Math.min(this.selectedCell.i, this.clickedCell.i);
-      max = Math.max(this.selectedCell.i, this.clickedCell.i);
-      if ((min + 1) === max) {
-        return true;
-      } else {
-        i = min + 1;
-        while (i < max) {
-          if (this.cells[this.selectedCell.j][i] != null) {
-            return false;
-          }
-          i++;
-        }
-        return true;
-      }
-    } else if (this.isSameCol()) {
-      min = Math.min(this.selectedCell.j, this.clickedCell.j);
-      max = Math.max(this.selectedCell.j, this.clickedCell.j);
-      if ((min + 1) === max) {
-        return true;
-      } else {
-        j = min + 1;
-        while (j < max) {
-          if (this.cells[j][this.selectedCell.i] != null) {
-            return false;
-          }
-          j++;
-        }
-        return true;
-      }
-    }
-    return false;
-  };
-
-  Board.prototype.isSameNumber = function() {
-    return this.selectedCell.n() === this.clickedCell.n();
   };
 
   Board.prototype.isSelf = function() {
