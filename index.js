@@ -448,6 +448,7 @@ Game = (function() {
   function Game() {
     this.score = 0;
     this.paused = false;
+    this.finished = false;
     this.showScore();
     this.interval = null;
     this.remainingTime = TIME;
@@ -501,6 +502,7 @@ Game = (function() {
 
   Game.prototype.finish = function() {
     this.stop();
+    this.finished = true;
     if (this.score > bestScore()) {
       this.setBestScore();
       return showBestScore();
@@ -599,7 +601,7 @@ newGame = function() {
 };
 
 togglePause = function() {
-  if (game != null) {
+  if ((game != null) && !game.finished) {
     return game.togglePause();
   }
 };

@@ -3,6 +3,7 @@ class Game
   constructor: () ->
     @score = 0
     @paused = false
+    @finished = false
     @showScore()
     @interval = null
     @remainingTime = TIME
@@ -48,6 +49,7 @@ class Game
 
   finish: () ->
     @stop()
+    @finished = true
     if @score > bestScore()
       @setBestScore()
       showBestScore()
