@@ -571,7 +571,7 @@ WIDTH = Math.floor(CANVAS_WIDTH / N);
 
 FRAME_RATE = 1000 / 30;
 
-TIME = 250;
+TIME = 300;
 
 WAVE_TIME = 10;
 
