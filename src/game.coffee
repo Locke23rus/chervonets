@@ -20,11 +20,15 @@ class Game
   togglePause: ->
     @paused = not @paused
     if @paused
-      @stop()
-      board.drawPaused()
+      @pause()
     else
       @start()
       board.draw()
+
+  pause: ->
+    unless @finished
+      @stop()
+      board.drawPaused()
 
   incrementScore: (n) ->
     @score += n

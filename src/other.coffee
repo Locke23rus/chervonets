@@ -37,3 +37,7 @@ init = ->
   showBestScore()
 
 init()
+
+
+Visibility.change (e, state) ->
+  game.pause() if state is 'hidden' and game?

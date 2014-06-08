@@ -468,11 +468,17 @@ Game = (function() {
   Game.prototype.togglePause = function() {
     this.paused = !this.paused;
     if (this.paused) {
-      this.stop();
-      return board.drawPaused();
+      return this.pause();
     } else {
       this.start();
       return board.draw();
+    }
+  };
+
+  Game.prototype.pause = function() {
+    if (!this.finished) {
+      this.stop();
+      return board.drawPaused();
     }
   };
 
@@ -619,5 +625,11 @@ init = function() {
 };
 
 init();
+
+Visibility.change(function(e, state) {
+  if (state === 'hidden' && (game != null)) {
+    return game.pause();
+  }
+});
 
 //# sourceMappingURL=index.map
