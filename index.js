@@ -48,7 +48,7 @@ Board = (function() {
   };
 
   Board.prototype.draw = function() {
-    var cell, i, j, _i, _results;
+    var cell, i, j, _i, _j, _ref;
     this.clear();
     if ((this.selectedCell != null) && (this.targetCell != null) && this.selectedCell.x === this.targetCell.x && this.selectedCell.y === this.targetCell.y) {
       if (this.targetCell.n != null) {
@@ -65,29 +65,19 @@ Board = (function() {
       game.finish();
       return;
     }
-    _results = [];
     for (j = _i = 0; 0 <= N ? _i < N : _i > N; j = 0 <= N ? ++_i : --_i) {
-      _results.push((function() {
-        var _j, _results1;
-        _results1 = [];
-        for (i = _j = 0; 0 <= N ? _j < N : _j > N; i = 0 <= N ? ++_j : --_j) {
-          cell = this.cells[j][i];
-          if (cell.n != null) {
-            cell.x += cell.deltaX;
-            cell.y += cell.deltaY;
-            if (this.isSelected(cell)) {
-              _results1.push(cell.drawSelect());
-            } else {
-              _results1.push(cell.draw());
-            }
-          } else {
-            _results1.push(void 0);
+      for (i = _j = 0; 0 <= N ? _j < N : _j > N; i = 0 <= N ? ++_j : --_j) {
+        cell = this.cells[j][i];
+        if (cell.n != null) {
+          cell.x += cell.deltaX;
+          cell.y += cell.deltaY;
+          if (!this.isSelected(cell)) {
+            cell.draw();
           }
         }
-        return _results1;
-      }).call(this));
+      }
     }
-    return _results;
+    return (_ref = this.selectedCell) != null ? _ref.drawSelect() : void 0;
   };
 
   Board.prototype.emptyCells = function() {

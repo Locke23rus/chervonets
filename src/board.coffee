@@ -46,10 +46,8 @@ class Board
         if cell.n?
           cell.x += cell.deltaX
           cell.y += cell.deltaY
-          if @isSelected(cell)
-            cell.drawSelect()
-          else
-            cell.draw()
+          cell.draw() unless @isSelected(cell)
+    @selectedCell?.drawSelect()
 
   emptyCells: () ->
     a = []
