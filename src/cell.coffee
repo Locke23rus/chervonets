@@ -3,6 +3,8 @@ class Cell
   constructor: (@i, @j, @n) ->
     @x = @i * WIDTH
     @y = @j * WIDTH
+    @deltaX = 0
+    @deltaY = 0
 
   color: ->
     switch @n
@@ -46,3 +48,10 @@ class Cell
 
   clear: ->
     ctx.clearRect @x, @y, WIDTH, WIDTH
+
+  reset: ->
+    @n = null
+    @x = @i * WIDTH
+    @y = @j * WIDTH
+    @deltaX = 0
+    @deltaY = 0

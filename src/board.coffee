@@ -20,10 +20,32 @@ class Board
 
   draw: ->
     @clear()
+
+    # Movement
+    if @selectedCell? and @targetCell? and
+        @selectedCell.x is @targetCell.x and
+        @selectedCell.y is @targetCell.y
+
+      if @targetCell.n?
+        @targetCell.reset()
+      else
+        @targetCell.n = @selectedCell.n
+      @selectedCell.reset()
+
+      @selectedCell = null
+      @targetCell = null
+
+    unless @hasBlocks()
+      board.drawFinish()
+      game.finish()
+      return
+
     for j in [0...N]
       for i in [0...N]
         cell = @cells[j][i]
         if cell.n?
+          cell.x += cell.deltaX
+          cell.y += cell.deltaY
           if @isSelected(cell)
             cell.drawSelect()
           else
@@ -81,26 +103,19 @@ class Board
       else if @isSameCol() or @isSameRow()
         if @canHit()
           game.incrementScore @scoreFactor(@hitDistance())
-          @selectedCell.n = null
-          @targetCell.n = null
-          @selectedCell = null
-          @targetCell = null
-
-          unless @hasBlocks()
-            board.drawFinish()
-            game.finish()
-
+          @moveCell @selectedCell, @targetCell
           return
         else if @canMove()
           game.decrementScore @scoreFactor(@moveDistance())
-          @targetCell.n = @selectedCell.n
-          @selectedCell.n = null
-          @selectedCell = null
-          @targetCell = null
+          @moveCell @selectedCell, @targetCell
           return
 
     @selectedCell = @clickedCell
 
+
+  moveCell: (from, to) ->
+    from.deltaX = (to.x - from.x) / 50 * 10
+    from.deltaY = (to.y - from.y) / 50 * 10
 
   direction: ->
     if @isSameRow()

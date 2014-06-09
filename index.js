@@ -50,6 +50,21 @@ Board = (function() {
   Board.prototype.draw = function() {
     var cell, i, j, _i, _results;
     this.clear();
+    if ((this.selectedCell != null) && (this.targetCell != null) && this.selectedCell.x === this.targetCell.x && this.selectedCell.y === this.targetCell.y) {
+      if (this.targetCell.n != null) {
+        this.targetCell.reset();
+      } else {
+        this.targetCell.n = this.selectedCell.n;
+      }
+      this.selectedCell.reset();
+      this.selectedCell = null;
+      this.targetCell = null;
+    }
+    if (!this.hasBlocks()) {
+      board.drawFinish();
+      game.finish();
+      return;
+    }
     _results = [];
     for (j = _i = 0; 0 <= N ? _i < N : _i > N; j = 0 <= N ? ++_i : --_i) {
       _results.push((function() {
@@ -58,6 +73,8 @@ Board = (function() {
         for (i = _j = 0; 0 <= N ? _j < N : _j > N; i = 0 <= N ? ++_j : --_j) {
           cell = this.cells[j][i];
           if (cell.n != null) {
+            cell.x += cell.deltaX;
+            cell.y += cell.deltaY;
             if (this.isSelected(cell)) {
               _results1.push(cell.drawSelect());
             } else {
@@ -150,26 +167,21 @@ Board = (function() {
       } else if (this.isSameCol() || this.isSameRow()) {
         if (this.canHit()) {
           game.incrementScore(this.scoreFactor(this.hitDistance()));
-          this.selectedCell.n = null;
-          this.targetCell.n = null;
-          this.selectedCell = null;
-          this.targetCell = null;
-          if (!this.hasBlocks()) {
-            board.drawFinish();
-            game.finish();
-          }
+          this.moveCell(this.selectedCell, this.targetCell);
           return;
         } else if (this.canMove()) {
           game.decrementScore(this.scoreFactor(this.moveDistance()));
-          this.targetCell.n = this.selectedCell.n;
-          this.selectedCell.n = null;
-          this.selectedCell = null;
-          this.targetCell = null;
+          this.moveCell(this.selectedCell, this.targetCell);
           return;
         }
       }
     }
     return this.selectedCell = this.clickedCell;
+  };
+
+  Board.prototype.moveCell = function(from, to) {
+    from.deltaX = (to.x - from.x) / 50 * 10;
+    return from.deltaY = (to.y - from.y) / 50 * 10;
   };
 
   Board.prototype.direction = function() {
@@ -364,6 +376,8 @@ Cell = (function() {
     this.n = n;
     this.x = this.i * WIDTH;
     this.y = this.j * WIDTH;
+    this.deltaX = 0;
+    this.deltaY = 0;
   }
 
   Cell.prototype.color = function() {
@@ -427,6 +441,14 @@ Cell = (function() {
 
   Cell.prototype.clear = function() {
     return ctx.clearRect(this.x, this.y, WIDTH, WIDTH);
+  };
+
+  Cell.prototype.reset = function() {
+    this.n = null;
+    this.x = this.i * WIDTH;
+    this.y = this.j * WIDTH;
+    this.deltaX = 0;
+    return this.deltaY = 0;
   };
 
   return Cell;
