@@ -1,11 +1,11 @@
 class Cell
 
-  constructor: (@i, @j) ->
+  constructor: (@i, @j, @n) ->
     @x = @i * WIDTH
     @y = @j * WIDTH
 
   color: ->
-    switch @n()
+    switch @n
       when 1 then "#FF6633"
       when 2 then "#66CCFF"
       when 3 then "#FF66FF"
@@ -32,13 +32,13 @@ class Cell
     ctx.fillStyle = color
     ctx.font = "30px monospaced"
     ctx.textBaseline = "middle"
-    if @n() is 10
-      ctx.fillText @n(), @x + 8, @y + 25
+    if @n is 10
+      ctx.fillText @n, @x + 8, @y + 25
     else
-      ctx.fillText @n(), @x + 15, @y + 25
+      ctx.fillText @n, @x + 15, @y + 25
 
   isEmpty: ->
-    not @n()?
+    not @n?
 
   drawSelect: ->
     @drawBackground "#000066"
@@ -46,6 +46,3 @@ class Cell
 
   clear: ->
     ctx.clearRect @x, @y, WIDTH, WIDTH
-
-  n: ->
-    board.cells[@j][@i]

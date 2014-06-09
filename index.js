@@ -34,12 +34,12 @@ Board = (function() {
     var i, j, _i, _results;
     _results = [];
     for (j = _i = 0; 0 <= N ? _i < N : _i > N; j = 0 <= N ? ++_i : --_i) {
-      this.cells.push([]);
+      this.cells[j] = [];
       _results.push((function() {
         var _j, _results1;
         _results1 = [];
         for (i = _j = 0; 0 <= N ? _j < N : _j > N; i = 0 <= N ? ++_j : --_j) {
-          _results1.push(this.cells[j][i] = Number.randomInt(1, 10));
+          _results1.push(this.cells[j][i] = new Cell(i, j, Number.randomInt(1, 10)));
         }
         return _results1;
       }).call(this));
@@ -56,8 +56,8 @@ Board = (function() {
         var _j, _results1;
         _results1 = [];
         for (i = _j = 0; 0 <= N ? _j < N : _j > N; i = 0 <= N ? ++_j : --_j) {
-          cell = new Cell(i, j);
-          if (cell.n() != null) {
+          cell = this.cells[j][i];
+          if (cell.n != null) {
             if (this.isSelected(cell)) {
               _results1.push(cell.drawSelect());
             } else {
@@ -78,8 +78,8 @@ Board = (function() {
     a = [];
     for (j = _i = 0; 0 <= N ? _i < N : _i > N; j = 0 <= N ? ++_i : --_i) {
       for (i = _j = 0; 0 <= N ? _j < N : _j > N; i = 0 <= N ? ++_j : --_j) {
-        if (this.cells[j][i] == null) {
-          a.push(new Cell(i, j));
+        if (this.cells[j][i].n == null) {
+          a.push(this.cells[j][i]);
         }
       }
     }
@@ -91,31 +91,23 @@ Board = (function() {
     a = [];
     for (j = _i = 0; 0 <= N ? _i < N : _i > N; j = 0 <= N ? ++_i : --_i) {
       for (i = _j = 0; 0 <= N ? _j < N : _j > N; i = 0 <= N ? ++_j : --_j) {
-        if (this.cells[j][i]) {
-          a.push(this.cells[j][i]);
+        if (this.cells[j][i].n != null) {
+          a.push(this.cells[j][i].n);
         }
       }
     }
     return a.unique();
   };
 
-  Board.prototype.insert = function(cell, n) {
-    return this.cells[cell.j][cell.i] = n;
-  };
-
-  Board.prototype.remove = function(cell) {
-    return this.cells[cell.j][cell.i] = null;
-  };
-
   Board.prototype.addRandomCell = function() {
-    return this.insert(this.emptyCells().randomElement(), this.availableNumbers().randomElement());
+    return this.emptyCells().randomElement().n = this.availableNumbers().randomElement();
   };
 
   Board.prototype.hasBlocks = function() {
     var i, j, _i, _j;
     for (j = _i = 0; 0 <= N ? _i < N : _i > N; j = 0 <= N ? ++_i : --_i) {
       for (i = _j = 0; 0 <= N ? _j < N : _j > N; i = 0 <= N ? ++_j : --_j) {
-        if (this.cells[j][i] != null) {
+        if (this.cells[j][i].n != null) {
           return true;
         }
       }
@@ -147,7 +139,7 @@ Board = (function() {
     var i, j;
     i = Math.floor(x / WIDTH);
     j = Math.floor(y / WIDTH);
-    this.clickedCell = new Cell(i, j);
+    this.clickedCell = this.cells[j][i];
     if (this.clickedCell.isEmpty() && (this.selectedCell == null)) {
       return;
     }
@@ -158,8 +150,8 @@ Board = (function() {
       } else if (this.isSameCol() || this.isSameRow()) {
         if (this.canHit()) {
           game.incrementScore(this.scoreFactor(this.hitDistance()));
-          this.remove(this.selectedCell);
-          this.remove(this.targetCell);
+          this.selectedCell.n = null;
+          this.targetCell.n = null;
           this.selectedCell = null;
           this.targetCell = null;
           if (!this.hasBlocks()) {
@@ -169,8 +161,8 @@ Board = (function() {
           return;
         } else if (this.canMove()) {
           game.decrementScore(this.scoreFactor(this.moveDistance()));
-          this.insert(this.targetCell, this.selectedCell.n());
-          this.remove(this.selectedCell);
+          this.targetCell.n = this.selectedCell.n;
+          this.selectedCell.n = null;
           this.selectedCell = null;
           this.targetCell = null;
           return;
@@ -196,13 +188,13 @@ Board = (function() {
     }
   };
 
-  Board.prototype.canHitColl = function(colls) {
+  Board.prototype.canHitColl = function(range) {
     var cell, j, _i, _len;
-    for (_i = 0, _len = colls.length; _i < _len; _i++) {
-      j = colls[_i];
-      cell = new Cell(this.selectedCell.i, j);
-      if (cell.n() != null) {
-        if (this.selectedCell.n() === cell.n()) {
+    for (_i = 0, _len = range.length; _i < _len; _i++) {
+      j = range[_i];
+      cell = this.cells[j][this.selectedCell.i];
+      if (cell.n != null) {
+        if (this.selectedCell.n === cell.n) {
           this.targetCell = cell;
           return true;
         } else {
@@ -213,13 +205,13 @@ Board = (function() {
     return false;
   };
 
-  Board.prototype.canHitRow = function(rows) {
+  Board.prototype.canHitRow = function(range) {
     var cell, i, _i, _len;
-    for (_i = 0, _len = rows.length; _i < _len; _i++) {
-      i = rows[_i];
-      cell = new Cell(i, this.selectedCell.j);
-      if (cell.n() != null) {
-        if (this.selectedCell.n() === cell.n()) {
+    for (_i = 0, _len = range.length; _i < _len; _i++) {
+      i = range[_i];
+      cell = this.cells[this.selectedCell.j][i];
+      if (cell.n != null) {
+        if (this.selectedCell.n === cell.n) {
           this.targetCell = cell;
           return true;
         } else {
@@ -254,19 +246,19 @@ Board = (function() {
       case RIGHT:
         return this.canHitRow((function() {
           _results3 = [];
-          for (var _l = _ref3 = this.selectedCell.i + 1; _ref3 <= N ? _l <= N : _l >= N; _ref3 <= N ? _l++ : _l--){ _results3.push(_l); }
+          for (var _l = _ref3 = this.selectedCell.i + 1; _ref3 <= N ? _l < N : _l > N; _ref3 <= N ? _l++ : _l--){ _results3.push(_l); }
           return _results3;
         }).apply(this));
     }
     return false;
   };
 
-  Board.prototype.canMoveColl = function(colls) {
+  Board.prototype.canMoveColl = function(range) {
     var cell, j, _i, _len;
-    for (_i = 0, _len = colls.length; _i < _len; _i++) {
-      j = colls[_i];
-      cell = new Cell(this.selectedCell.i, j);
-      if (cell.n() != null) {
+    for (_i = 0, _len = range.length; _i < _len; _i++) {
+      j = range[_i];
+      cell = this.cells[j][this.selectedCell.i];
+      if (cell.n != null) {
         return this.targetCell != null;
       } else {
         this.targetCell = cell;
@@ -275,12 +267,12 @@ Board = (function() {
     return this.targetCell != null;
   };
 
-  Board.prototype.canMoveRow = function(rows) {
+  Board.prototype.canMoveRow = function(range) {
     var cell, i, _i, _len;
-    for (_i = 0, _len = rows.length; _i < _len; _i++) {
-      i = rows[_i];
-      cell = new Cell(i, this.selectedCell.j);
-      if (cell.n() != null) {
+    for (_i = 0, _len = range.length; _i < _len; _i++) {
+      i = range[_i];
+      cell = this.cells[this.selectedCell.j][i];
+      if (cell.n != null) {
         return this.targetCell != null;
       } else {
         this.targetCell = cell;
@@ -366,15 +358,16 @@ Board = (function() {
 })();
 
 Cell = (function() {
-  function Cell(i, j) {
+  function Cell(i, j, n) {
     this.i = i;
     this.j = j;
+    this.n = n;
     this.x = this.i * WIDTH;
     this.y = this.j * WIDTH;
   }
 
   Cell.prototype.color = function() {
-    switch (this.n()) {
+    switch (this.n) {
       case 1:
         return "#FF6633";
       case 2:
@@ -416,15 +409,15 @@ Cell = (function() {
     ctx.fillStyle = color;
     ctx.font = "30px monospaced";
     ctx.textBaseline = "middle";
-    if (this.n() === 10) {
-      return ctx.fillText(this.n(), this.x + 8, this.y + 25);
+    if (this.n === 10) {
+      return ctx.fillText(this.n, this.x + 8, this.y + 25);
     } else {
-      return ctx.fillText(this.n(), this.x + 15, this.y + 25);
+      return ctx.fillText(this.n, this.x + 15, this.y + 25);
     }
   };
 
   Cell.prototype.isEmpty = function() {
-    return this.n() == null;
+    return this.n == null;
   };
 
   Cell.prototype.drawSelect = function() {
@@ -434,10 +427,6 @@ Cell = (function() {
 
   Cell.prototype.clear = function() {
     return ctx.clearRect(this.x, this.y, WIDTH, WIDTH);
-  };
-
-  Cell.prototype.n = function() {
-    return board.cells[this.j][this.i];
   };
 
   return Cell;

@@ -14,16 +14,16 @@ class Board
 
   fill: ->
     for j in [0...N]
-      @cells.push []
+      @cells[j] = []
       for i in [0...N]
-        @cells[j][i] = Number.randomInt(1, 10)
+        @cells[j][i] = new Cell(i, j, Number.randomInt(1, 10))
 
   draw: ->
     @clear()
     for j in [0...N]
       for i in [0...N]
-        cell = new Cell(i, j)
-        if cell.n()?
+        cell = @cells[j][i]
+        if cell.n?
           if @isSelected(cell)
             cell.drawSelect()
           else
@@ -33,30 +33,23 @@ class Board
     a = []
     for j in [0...N]
       for i in [0...N]
-        a.push new Cell(i, j)  unless @cells[j][i]?
+        a.push @cells[j][i] unless @cells[j][i].n?
     a
 
   availableNumbers: ->
     a = []
     for j in [0...N]
       for i in [0...N]
-            a.push @cells[j][i]  if @cells[j][i]
+        a.push @cells[j][i].n if @cells[j][i].n?
     a.unique()
 
-  insert: (cell, n) ->
-    @cells[cell.j][cell.i] = n
-
-  remove: (cell) ->
-    @cells[cell.j][cell.i] = null
-
   addRandomCell: ->
-    @insert @emptyCells().randomElement(),
-            @availableNumbers().randomElement()
+    @emptyCells().randomElement().n = @availableNumbers().randomElement()
 
   hasBlocks: ->
     for j in [0...N]
       for i in [0...N]
-        return true if @cells[j][i]?
+        return true if @cells[j][i].n?
     false
 
   clear: ->
@@ -78,7 +71,7 @@ class Board
   click: (x, y) ->
     i = x // WIDTH
     j = y // WIDTH
-    @clickedCell = new Cell(i, j)
+    @clickedCell = @cells[j][i]
 
     return if @clickedCell.isEmpty() and not @selectedCell?
     if @selectedCell?
@@ -88,8 +81,8 @@ class Board
       else if @isSameCol() or @isSameRow()
         if @canHit()
           game.incrementScore @scoreFactor(@hitDistance())
-          @remove @selectedCell
-          @remove @targetCell
+          @selectedCell.n = null
+          @targetCell.n = null
           @selectedCell = null
           @targetCell = null
 
@@ -100,9 +93,8 @@ class Board
           return
         else if @canMove()
           game.decrementScore @scoreFactor(@moveDistance())
-          @insert @targetCell, @selectedCell.n()
-          @remove @selectedCell
-
+          @targetCell.n = @selectedCell.n
+          @selectedCell.n = null
           @selectedCell = null
           @targetCell = null
           return
@@ -116,22 +108,22 @@ class Board
     else
       if @selectedCell.j > @clickedCell.j then UP else DOWN
 
-  canHitColl: (colls) ->
-    for j in colls
-      cell = new Cell(@selectedCell.i, j)
-      if cell.n()?
-        if @selectedCell.n() is cell.n()
+  canHitColl: (range) ->
+    for j in range
+      cell = @cells[j][@selectedCell.i]
+      if cell.n?
+        if @selectedCell.n is cell.n
           @targetCell = cell
           return true
         else
           return false
     false
 
-  canHitRow: (rows) ->
-    for i in rows
-      cell = new Cell(i, @selectedCell.j)
-      if cell.n()?
-        if @selectedCell.n() is cell.n()
+  canHitRow: (range) ->
+    for i in range
+      cell = @cells[@selectedCell.j][i]
+      if cell.n?
+        if @selectedCell.n is cell.n
           @targetCell = cell
           return true
         else
@@ -147,22 +139,22 @@ class Board
       when LEFT
         return @canHitRow([@selectedCell.i-1..0])
       when RIGHT
-        return @canHitRow([@selectedCell.i+1..N])
+        return @canHitRow([@selectedCell.i+1...N])
     false
 
-  canMoveColl: (colls) ->
-    for j in colls
-      cell = new Cell(@selectedCell.i, j)
-      if cell.n()?
+  canMoveColl: (range) ->
+    for j in range
+      cell = @cells[j][@selectedCell.i]
+      if cell.n?
         return @targetCell?
       else
         @targetCell = cell
     @targetCell?
 
-  canMoveRow: (rows) ->
-    for i in rows
-      cell = new Cell(i, @selectedCell.j)
-      if cell.n()?
+  canMoveRow: (range) ->
+    for i in range
+      cell = @cells[@selectedCell.j][i]
+      if cell.n?
         return @targetCell?
       else
         @targetCell = cell
