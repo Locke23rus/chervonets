@@ -10,6 +10,7 @@ class Board
     @selectedCell = null
     @clickedCell = null
     @targetCell = null
+    @events = []
     @fill()
 
   fill: ->
@@ -21,19 +22,22 @@ class Board
   draw: ->
     @clear()
 
-    # Movement
-    if @selectedCell? and @targetCell? and
-        @selectedCell.x is @targetCell.x and
-        @selectedCell.y is @targetCell.y
+    @events = (e for e in @events when e.time > 0)
+    event.draw() for event in @events
 
-      if @targetCell.n?
-        @targetCell.reset()
-      else
-        @targetCell.n = @selectedCell.n
-      @selectedCell.reset()
-
-      @selectedCell = null
-      @targetCell = null
+#    # Movement
+#    if @selectedCell? and @targetCell? and
+#        @selectedCell.x is @targetCell.x and
+#        @selectedCell.y is @targetCell.y
+#
+#      if @targetCell.n?
+#        @targetCell.reset()
+#      else
+#        @targetCell.n = @selectedCell.n
+#      @selectedCell.reset()
+#
+#      @selectedCell = null
+#      @targetCell = null
 
     unless @hasBlocks()
       board.drawFinish()
@@ -43,10 +47,8 @@ class Board
     for j in [0...N]
       for i in [0...N]
         cell = @cells[j][i]
-        if cell.n?
-          cell.x += cell.deltaX
-          cell.y += cell.deltaY
-          cell.draw() unless @isSelected(cell)
+        if cell.n? and not @isSelected(cell)
+          cell.draw()
     @selectedCell?.drawSelect()
 
   emptyCells: () ->
@@ -100,20 +102,15 @@ class Board
         return
       else if @isSameCol() or @isSameRow()
         if @canHit()
+          @events.push new HitEvent(@selectedCell, @targetCell, @hitDistance())
           game.incrementScore @scoreFactor(@hitDistance())
-          @moveCell @selectedCell, @targetCell
           return
         else if @canMove()
+          @events.push new MoveEvent(@selectedCell, @targetCell, @moveDistance())
           game.decrementScore @scoreFactor(@moveDistance())
-          @moveCell @selectedCell, @targetCell
           return
 
     @selectedCell = @clickedCell
-
-
-  moveCell: (from, to) ->
-    from.deltaX = (to.x - from.x) / 50 * 10
-    from.deltaY = (to.y - from.y) / 50 * 10
 
   direction: ->
     if @isSameRow()
