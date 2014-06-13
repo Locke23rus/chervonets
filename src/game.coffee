@@ -10,6 +10,9 @@ class Game
     @timeInterval = null
     @waveTime = WAVE_TIME * 1000
     @waveInterval = null
+    @frameCounter = 0
+    @fps = 16
+    @time = performance.now() || new Date().getTime()
 
   showScore: ->
     document.getElementById('score').innerText = @score.toString()
@@ -42,6 +45,14 @@ class Game
     document.getElementById('pause').innerText = 'Pause'
     @showTime()
     @interval = setInterval (() ->
+      game.frameCounter++
+      currentTime = performance.now() || new Date().getTime()
+      elapsedTimeMS = currentTime - game.time;
+      if elapsedTimeMS >= 1000
+        game.fps = game.frameCounter
+        game.frameCounter = 0
+        game.time = currentTime
+        console.log(game.fps)
       board.draw()),
       FRAME_RATE
     @timeInterval = setInterval (() ->
