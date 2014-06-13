@@ -1,7 +1,7 @@
 N = 10
 CANVAS_WIDTH = 500
 WIDTH = CANVAS_WIDTH // N
-FRAME_RATE = 1000 / 30
+FRAME_RATE = 1000 / 60
 TIME = 300
 WAVE_TIME = 10
 WAVE_RATE = WAVE_TIME * 10
@@ -9,9 +9,13 @@ canvas = document.getElementById('game-canvas')
 ctx = canvas.getContext('2d')
 game = null
 board = null
+MOVE_TIME = 100
 
 canvas.addEventListener 'click', ((e) ->
-  board.click(e.offsetX, e.offsetY) if game? and not game.finished
+  if game? and not game.finished
+    x = if e.offsetX? then e.offsetX else e.clientX - e.target.offsetLeft
+    y = if e.offsetY? then e.offsetY else e.clientY - e.target.offsetTop
+    board.click x, y
 ), false
 
 addEventListener 'keyup', (e) ->
