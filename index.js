@@ -463,7 +463,7 @@ Game = (function() {
   }
 
   Game.prototype.showScore = function() {
-    return document.getElementById('score').innerText = this.score.toString();
+    return document.getElementById('score').innerHTML = this.score.toString();
   };
 
   Game.prototype.setBestScore = function() {
@@ -498,7 +498,7 @@ Game = (function() {
   };
 
   Game.prototype.start = function() {
-    document.getElementById('pause').innerText = 'Pause';
+    document.getElementById('pause').innerHTML = 'Pause';
     this.showTime();
     this.interval = setInterval((function() {
       var currentTime, elapsedTimeMS;
@@ -530,7 +530,7 @@ Game = (function() {
   };
 
   Game.prototype.stop = function() {
-    document.getElementById('pause').innerText = 'Continue';
+    document.getElementById('pause').innerHTML = 'Continue';
     clearInterval(this.interval);
     clearInterval(this.timeInterval);
     return clearInterval(this.waveInterval);
@@ -557,7 +557,7 @@ Game = (function() {
   };
 
   Game.prototype.showTime = function() {
-    return document.getElementById('time').innerText = this.remainingTime;
+    return document.getElementById('time').innerHTML = this.remainingTime;
   };
 
   Game.prototype.showWave = function() {
@@ -581,7 +581,6 @@ this.HitEvent = (function() {
   HitEvent.prototype.draw = function() {
     var tickTime;
     tickTime = 1000 / game.fps;
-    console.log(tickTime);
     this.from.x += tickTime * this.deltaX;
     this.from.y += tickTime * this.deltaY;
     this.time -= tickTime;
@@ -610,7 +609,6 @@ this.MoveEvent = (function() {
   MoveEvent.prototype.draw = function() {
     var tickTime;
     tickTime = 1000 / game.fps;
-    console.log(tickTime);
     this.from.x += tickTime * this.deltaX;
     this.from.y += tickTime * this.deltaY;
     this.time -= tickTime;
@@ -687,7 +685,7 @@ bestScore = function() {
 };
 
 showBestScore = function() {
-  return document.getElementById('best-score').innerText = bestScore();
+  return document.getElementById('best-score').innerHTML = bestScore();
 };
 
 newGame = function() {

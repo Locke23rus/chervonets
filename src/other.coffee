@@ -31,7 +31,7 @@ bestScore = ->
            10
 
 showBestScore = ->
-  document.getElementById('best-score').innerText = bestScore()
+  document.getElementById('best-score').innerHTML = bestScore()
 
 newGame = ->
   game.stop() if game?

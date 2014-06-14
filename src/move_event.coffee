@@ -7,7 +7,6 @@ class @MoveEvent
 
   draw: ->
     tickTime = 1000 / game.fps
-    console.log tickTime
     @from.x += tickTime * @deltaX
     @from.y += tickTime * @deltaY
     @time -= tickTime

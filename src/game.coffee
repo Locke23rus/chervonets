@@ -15,7 +15,7 @@ class Game
     @time = performance.now() || new Date().getTime()
 
   showScore: ->
-    document.getElementById('score').innerText = @score.toString()
+    document.getElementById('score').innerHTML = @score.toString()
 
   setBestScore: () ->
     localStorage.setItem 'best_score', @score
@@ -42,7 +42,7 @@ class Game
     @showScore()
 
   start: () ->
-    document.getElementById('pause').innerText = 'Pause'
+    document.getElementById('pause').innerHTML = 'Pause'
     @showTime()
     @interval = setInterval (() ->
       game.frameCounter++
@@ -69,7 +69,7 @@ class Game
       showBestScore()
 
   stop: () ->
-    document.getElementById('pause').innerText = 'Continue'
+    document.getElementById('pause').innerHTML = 'Continue'
     clearInterval @interval
     clearInterval @timeInterval
     clearInterval @waveInterval
@@ -92,7 +92,7 @@ class Game
       @waveTime = WAVE_TIME * 1000
 
   showTime: () ->
-    document.getElementById('time').innerText = @remainingTime
+    document.getElementById('time').innerHTML = @remainingTime
 
   showWave: () ->
     document.getElementById('wave').style.width = (@waveTime / WAVE_RATE) + 'px'
