@@ -25,20 +25,6 @@ class Board
     @events = (e for e in @events when e.time > 0)
     event.draw() for event in @events
 
-#    # Movement
-#    if @selectedCell? and @targetCell? and
-#        @selectedCell.x is @targetCell.x and
-#        @selectedCell.y is @targetCell.y
-#
-#      if @targetCell.n?
-#        @targetCell.reset()
-#      else
-#        @targetCell.n = @selectedCell.n
-#      @selectedCell.reset()
-#
-#      @selectedCell = null
-#      @targetCell = null
-
     unless @hasBlocks()
       board.drawFinish()
       game.finish()
@@ -50,6 +36,7 @@ class Board
         if cell.n? and not @isSelected(cell)
           cell.draw()
     @selectedCell?.drawSelect()
+    ctx.drawImage(fakeCanvas, 0, 0);
 
   emptyCells: () ->
     a = []
@@ -76,19 +63,22 @@ class Board
 
   clear: ->
     ctx.clearRect 0, 0, CANVAS_WIDTH, CANVAS_WIDTH
+    fakeCtx.clearRect 0, 0, CANVAS_WIDTH, CANVAS_WIDTH
 
   drawFinish: ->
     @drawText 'Finish!'
+    ctx.drawImage(fakeCanvas, 0, 0);
 
   drawPaused: ->
     @drawText 'Paused'
+    ctx.drawImage(fakeCanvas, 0, 0);
 
   drawText: (text) ->
     @clear()
-    ctx.fillStyle = '#000'
-    ctx.font = '50px Slackey'
-    ctx.textBaseline = 'middle'
-    ctx.fillText text, CANVAS_WIDTH / 2 - 85, CANVAS_WIDTH / 2
+    fakeCtx.fillStyle = '#000'
+    fakeCtx.font = '50px Slackey'
+    fakeCtx.textBaseline = 'middle'
+    fakeCtx.fillText text, CANVAS_WIDTH / 2 - 85, CANVAS_WIDTH / 2
 
   click: (x, y) ->
     i = x // WIDTH
@@ -102,12 +92,12 @@ class Board
         return
       else if @isSameCol() or @isSameRow()
         if @canHit()
-          @events.push new HitEvent(@selectedCell, @targetCell, @hitDistance())
           game.incrementScore @scoreFactor(@hitDistance())
+          @events.push new HitEvent(@selectedCell, @targetCell, @hitDistance())
           return
         else if @canMove()
-          @events.push new MoveEvent(@selectedCell, @targetCell, @moveDistance())
           game.decrementScore @scoreFactor(@moveDistance())
+          @events.push new MoveEvent(@selectedCell, @targetCell, @moveDistance())
           return
 
     @selectedCell = @clickedCell

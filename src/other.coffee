@@ -7,6 +7,11 @@ WAVE_TIME = 10
 WAVE_RATE = WAVE_TIME * 10
 canvas = document.getElementById('game-canvas')
 ctx = canvas.getContext('2d')
+fakeCanvas = document.createElement('canvas');
+fakeCanvas.width = 500;
+fakeCanvas.height = 500;
+fakeCtx = fakeCanvas.getContext('2d');
+
 game = null
 board = null
 MOVE_TIME = 100

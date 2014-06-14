@@ -52,7 +52,6 @@ class Game
         game.fps = game.frameCounter
         game.frameCounter = 0
         game.time = currentTime
-        console.log(game.fps)
       board.draw()),
       FRAME_RATE
     @timeInterval = setInterval (() ->

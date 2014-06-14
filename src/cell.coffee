@@ -23,19 +23,19 @@ class Cell
     @drawNumber "#000"
 
   drawBackground: (color) ->
-    ctx.fillStyle = color
-    ctx.fillRect @x, @y, WIDTH, WIDTH
-    ctx.strokeStyle = "#FFF"
-    ctx.strokeRect @x, @y, WIDTH, WIDTH
+    fakeCtx.fillStyle = color
+    fakeCtx.fillRect @x, @y, WIDTH, WIDTH
+    fakeCtx.strokeStyle = "#FFF"
+    fakeCtx.strokeRect @x, @y, WIDTH, WIDTH
 
   drawNumber: (color) ->
-    ctx.fillStyle = color
-    ctx.font = "30px monospaced"
-    ctx.textBaseline = "middle"
+    fakeCtx.fillStyle = color
+    fakeCtx.font = "30px monospaced"
+    fakeCtx.textBaseline = "middle"
     if @n is 10
-      ctx.fillText @n, @x + 8, @y + 25
+      fakeCtx.fillText @n, @x + 8, @y + 25
     else
-      ctx.fillText @n, @x + 15, @y + 25
+      fakeCtx.fillText @n, @x + 15, @y + 25
 
   isEmpty: ->
     not @n?
@@ -45,7 +45,7 @@ class Cell
     @drawNumber "#FFF"
 
   clear: ->
-    ctx.clearRect @x, @y, WIDTH, WIDTH
+    fakeCtx.clearRect @x, @y, WIDTH, WIDTH
 
   reset: ->
     @n = null
