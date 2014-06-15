@@ -71,7 +71,7 @@ class Board
     fakeCtx.fillStyle = '#000'
     fakeCtx.textBaseline = 'middle'
     fakeCtx.font = '48px Slackey'
-    fakeCtx.fillText 'Finish!', 155, 150
+    fakeCtx.fillText 'Finish!', 160, 150
     fakeCtx.font = '34px Slackey'
     if game.score is bestScore()
       fakeCtx.fillText "New record: #{game.score}", 95, 275
