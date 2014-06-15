@@ -8,6 +8,6 @@ dev:
 
 build:
 	$(COFFEE) -j $(OUT) -mcb $(SRC)
-	./node_modules/.bin/uglifyjs visibility.min.js polyfills.js $(DEV_OUT) -o index.min.js
+	./node_modules/.bin/uglifyjs visibility.min.js polyfills.js $(OUT) -o index.min.js
 
 .PHONY: dev build
