@@ -13,8 +13,9 @@ class @HitEvent extends BaseEvent
       board.events.push new ScoreEvent(cell, i+1)
 
   finalize: ->
-    @from.reset()
-    @to.reset()
+    @from.n = undefined
+    @to.n = undefined
+    @from.setDefaultCoords()
     board.selectedCell = null
     board.targetCell = null
 

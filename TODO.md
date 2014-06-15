@@ -5,4 +5,3 @@
 * Use requestAnimationFrame
 * Add remaining time to score
 * Clear @selectedCell and @targetCell after create event
-* Add guard for targetCell in MoveEvent

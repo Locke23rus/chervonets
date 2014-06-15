@@ -385,8 +385,7 @@ Cell = (function() {
     this.i = i;
     this.j = j;
     this.n = n;
-    this.x = this.i * WIDTH;
-    this.y = this.j * WIDTH;
+    this.setDefaultCoords();
     this.event = void 0;
   }
 
@@ -453,12 +452,6 @@ Cell = (function() {
     return fakeCtx.clearRect(this.x, this.y, WIDTH, WIDTH);
   };
 
-  Cell.prototype.reset = function() {
-    this.n = null;
-    this.x = this.i * WIDTH;
-    return this.y = this.j * WIDTH;
-  };
-
   Cell.prototype.drawScore = function(score) {
     var str;
     fakeCtx.fillStyle = score > 0 ? "#66CC66" : "#FF3333";
@@ -474,6 +467,11 @@ Cell = (function() {
         return fakeCtx.fillText(score, this.x + 16, this.y + 26);
       }
     }
+  };
+
+  Cell.prototype.setDefaultCoords = function() {
+    this.x = this.i * WIDTH;
+    return this.y = this.j * WIDTH;
   };
 
   return Cell;
@@ -630,8 +628,9 @@ this.HitEvent = (function(_super) {
   };
 
   HitEvent.prototype.finalize = function() {
-    this.from.reset();
-    this.to.reset();
+    this.from.n = void 0;
+    this.to.n = void 0;
+    this.from.setDefaultCoords();
     board.selectedCell = null;
     board.targetCell = null;
     return board.events.push(new ScoreEvent(this.to, this.distance));
@@ -648,6 +647,8 @@ this.MoveEvent = (function(_super) {
     this.from = from;
     this.to = to;
     this.distance = distance;
+    this.to.n = this.from.n;
+    this.from.n = void 0;
     this.time = this.distance * MOVE_TIME;
     this.deltaX = (this.to.x - this.from.x) / this.distance / MOVE_TIME;
     this.deltaY = (this.to.y - this.from.y) / this.distance / MOVE_TIME;
@@ -669,8 +670,7 @@ this.MoveEvent = (function(_super) {
   };
 
   MoveEvent.prototype.finalize = function() {
-    this.to.n = this.from.n;
-    this.from.reset();
+    this.from.setDefaultCoords();
     board.selectedCell = null;
     return board.targetCell = null;
   };

@@ -1,8 +1,7 @@
 class Cell
 
   constructor: (@i, @j, @n) ->
-    @x = @i * WIDTH
-    @y = @j * WIDTH
+    @setDefaultCoords()
     @event = undefined
 
   color: ->
@@ -48,11 +47,6 @@ class Cell
   clear: ->
     fakeCtx.clearRect @x, @y, WIDTH, WIDTH
 
-  reset: ->
-    @n = null
-    @x = @i * WIDTH
-    @y = @j * WIDTH
-
   drawScore: (score) ->
     fakeCtx.fillStyle = if score > 0 then "#66CC66" else "#FF3333"
     fakeCtx.font = "24px monospaced"
@@ -65,3 +59,7 @@ class Cell
         fakeCtx.fillText "+#{score}", @x + 8, @y + 26
       else
         fakeCtx.fillText score, @x + 16, @y + 26
+
+  setDefaultCoords: ->
+    @x = @i * WIDTH
+    @y = @j * WIDTH
