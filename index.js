@@ -568,15 +568,13 @@ this.MoveEvent = (function(_super) {
     this.to = to;
     this.distance = distance;
     this.to.event = self;
-    this.endX = this.to.x;
-    this.endY = this.to.y;
+    this.time = this.distance * MOVE_TIME;
+    this.deltaX = (this.to.x - this.from.x) / this.distance / MOVE_TIME;
+    this.deltaY = (this.to.y - this.from.y) / this.distance / MOVE_TIME;
     this.to.n = this.from.n;
     this.to.x = this.from.x;
     this.to.y = this.from.y;
     this.from.n = null;
-    this.time = this.distance * MOVE_TIME;
-    this.deltaX = (this.endX - this.to.x) / this.distance / MOVE_TIME;
-    this.deltaY = (this.endY - this.to.y) / this.distance / MOVE_TIME;
   }
 
   MoveEvent.prototype.perform = function() {

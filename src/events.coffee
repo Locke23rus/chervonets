@@ -68,17 +68,14 @@ class @MoveEvent extends BaseEvent
 
   constructor: (@from, @to, @distance) ->
     @to.event = self
-    @endX = @to.x
-    @endY = @to.y
+    @time = @distance * MOVE_TIME
+    @deltaX = (@to.x - @from.x) / @distance / MOVE_TIME
+    @deltaY = (@to.y - @from.y) / @distance / MOVE_TIME
+
     @to.n = @from.n
     @to.x = @from.x
     @to.y = @from.y
     @from.n = null
-
-
-    @time = @distance * MOVE_TIME
-    @deltaX = (@endX - @to.x) / @distance / MOVE_TIME
-    @deltaY = (@endY - @to.y) / @distance / MOVE_TIME
 
   perform: ->
     @to.x += @tickTime * @deltaX
