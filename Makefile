@@ -1,17 +1,13 @@
 
 COFFEE = coffee
-OUT = index.js
+OUT = game.js
 SRC = src/*.coffee
-
-all: clean compile
 
 dev:
 	$(COFFEE) -j $(OUT) -mcbw $(SRC)
 
-compile:
+build:
 	$(COFFEE) -j $(OUT) -mcb $(SRC)
+	./node_modules/.bin/uglifyjs visibility.min.js polyfills.js $(DEV_OUT) -o index.min.js
 
-clean:
-	rm -f $(OUT)
-
-.PHONY: dev compile clean
+.PHONY: dev build
