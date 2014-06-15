@@ -30,13 +30,13 @@ class Board
     for j in [0...N]
       for i in [0...N]
         cell = @cells[j][i]
-        if cell.n? and not @isSelected(cell)
-          cell.draw()
+        cell.draw() if cell.n?
+
+    @selectedCell?.drawSelect()
 
     @events = (e for e in @events when e.time > 0)
     event.tick() for event in @events
 
-    @selectedCell?.drawSelect()
     ctx.drawImage(fakeCanvas, 0, 0);
 
   emptyCells: () ->
@@ -93,14 +93,18 @@ class Board
         return
       else if @isSameCol() or @isSameRow()
         if @canHit()
-          distance = @hitDistance()
+          distance = Board.distance(@selectedCell, @targetCell) + 1
           game.incrementScore Utils.scoreFactor(distance)
           @events.push new HitEvent(@selectedCell, @targetCell, distance)
+          @selectedCell = null
+          @targetCell = null
           return
         else if @canMove()
-          distance = @moveDistance()
+          distance = Board.distance(@selectedCell, @targetCell)
           game.decrementScore Utils.scoreFactor(distance)
           @events.push new MoveEvent(@selectedCell, @targetCell, distance)
+          @selectedCell = null
+          @targetCell = null
           return
 
     @selectedCell = @clickedCell
@@ -175,18 +179,6 @@ class Board
         return @canMoveRow([@selectedCell.i+1...N])
     false
 
-  hitDistance: () ->
-    if @isSameRow()
-      Math.abs(@targetCell.i - @selectedCell.i) + 1
-    else
-      Math.abs(@targetCell.j - @selectedCell.j) + 1
-
-  moveDistance: () ->
-    if @isSameRow()
-      Math.abs(@targetCell.i - @selectedCell.i)
-    else
-      Math.abs(@targetCell.j - @selectedCell.j)
-
   isSelf: () ->
     @selectedCell.i is @clickedCell.i and @selectedCell.j is @clickedCell.j
 
@@ -199,15 +191,8 @@ class Board
   isSelected: (cell) ->
     @selectedCell? and @selectedCell.i is cell.i and @selectedCell.j is cell.j
 
-
-Board.path = (from, to) ->
-  path = []
-  if from.i is to.i
-    currentJ = from.y // WIDTH
-    for j in [from.j...currentJ] when j isnt to.j
-      path.push board.cells[j][from.i]
+Board.distance = (from, to) ->
+  if from.j is to.j
+    Math.abs to.i - from.i
   else
-    currentI = from.x // WIDTH
-    for i in [from.i...currentI] when i isnt to.i
-      path.push board.cells[from.j][i]
-  path
+    Math.abs to.j - from.j

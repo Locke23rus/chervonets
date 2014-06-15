@@ -61,30 +61,30 @@ Board = (function() {
     for (j = _i = 0; 0 <= N ? _i < N : _i > N; j = 0 <= N ? ++_i : --_i) {
       for (i = _j = 0; 0 <= N ? _j < N : _j > N; i = 0 <= N ? ++_j : --_j) {
         cell = this.cells[j][i];
-        if ((cell.n != null) && !this.isSelected(cell)) {
+        if (cell.n != null) {
           cell.draw();
         }
       }
     }
+    if ((_ref = this.selectedCell) != null) {
+      _ref.drawSelect();
+    }
     this.events = (function() {
-      var _k, _len, _ref, _results;
-      _ref = this.events;
+      var _k, _len, _ref1, _results;
+      _ref1 = this.events;
       _results = [];
-      for (_k = 0, _len = _ref.length; _k < _len; _k++) {
-        e = _ref[_k];
+      for (_k = 0, _len = _ref1.length; _k < _len; _k++) {
+        e = _ref1[_k];
         if (e.time > 0) {
           _results.push(e);
         }
       }
       return _results;
     }).call(this);
-    _ref = this.events;
-    for (_k = 0, _len = _ref.length; _k < _len; _k++) {
-      event = _ref[_k];
+    _ref1 = this.events;
+    for (_k = 0, _len = _ref1.length; _k < _len; _k++) {
+      event = _ref1[_k];
       event.tick();
-    }
-    if ((_ref1 = this.selectedCell) != null) {
-      _ref1.drawSelect();
     }
     return ctx.drawImage(fakeCanvas, 0, 0);
   };
@@ -168,14 +168,18 @@ Board = (function() {
         return;
       } else if (this.isSameCol() || this.isSameRow()) {
         if (this.canHit()) {
-          distance = this.hitDistance();
+          distance = Board.distance(this.selectedCell, this.targetCell) + 1;
           game.incrementScore(Utils.scoreFactor(distance));
           this.events.push(new HitEvent(this.selectedCell, this.targetCell, distance));
+          this.selectedCell = null;
+          this.targetCell = null;
           return;
         } else if (this.canMove()) {
-          distance = this.moveDistance();
+          distance = Board.distance(this.selectedCell, this.targetCell);
           game.decrementScore(Utils.scoreFactor(distance));
           this.events.push(new MoveEvent(this.selectedCell, this.targetCell, distance));
+          this.selectedCell = null;
+          this.targetCell = null;
           return;
         }
       }
@@ -323,22 +327,6 @@ Board = (function() {
     return false;
   };
 
-  Board.prototype.hitDistance = function() {
-    if (this.isSameRow()) {
-      return Math.abs(this.targetCell.i - this.selectedCell.i) + 1;
-    } else {
-      return Math.abs(this.targetCell.j - this.selectedCell.j) + 1;
-    }
-  };
-
-  Board.prototype.moveDistance = function() {
-    if (this.isSameRow()) {
-      return Math.abs(this.targetCell.i - this.selectedCell.i);
-    } else {
-      return Math.abs(this.targetCell.j - this.selectedCell.j);
-    }
-  };
-
   Board.prototype.isSelf = function() {
     return this.selectedCell.i === this.clickedCell.i && this.selectedCell.j === this.clickedCell.j;
   };
@@ -359,25 +347,12 @@ Board = (function() {
 
 })();
 
-Board.path = function(from, to) {
-  var currentI, currentJ, i, j, path, _i, _j, _ref, _ref1;
-  path = [];
-  if (from.i === to.i) {
-    currentJ = Math.floor(from.y / WIDTH);
-    for (j = _i = _ref = from.j; _ref <= currentJ ? _i < currentJ : _i > currentJ; j = _ref <= currentJ ? ++_i : --_i) {
-      if (j !== to.j) {
-        path.push(board.cells[j][from.i]);
-      }
-    }
+Board.distance = function(from, to) {
+  if (from.j === to.j) {
+    return Math.abs(to.i - from.i);
   } else {
-    currentI = Math.floor(from.x / WIDTH);
-    for (i = _j = _ref1 = from.i; _ref1 <= currentI ? _j < currentI : _j > currentI; i = _ref1 <= currentI ? ++_j : --_j) {
-      if (i !== to.i) {
-        path.push(board.cells[from.j][i]);
-      }
-    }
+    return Math.abs(to.j - from.j);
   }
-  return path;
 };
 
 Cell = (function() {
@@ -386,7 +361,7 @@ Cell = (function() {
     this.j = j;
     this.n = n;
     this.setDefaultCoords();
-    this.event = void 0;
+    this.event = null;
   }
 
   Cell.prototype.color = function() {
@@ -477,6 +452,178 @@ Cell = (function() {
   return Cell;
 
 })();
+
+this.BaseEvent = (function() {
+  function BaseEvent() {}
+
+  BaseEvent.prototype.tick = function() {
+    this.updateTimer();
+    this.perform();
+    if (this.time <= 0) {
+      return this.finalize();
+    }
+  };
+
+  BaseEvent.prototype.updateTimer = function() {
+    this.tickTime = 1000 / game.fps;
+    return this.time -= this.tickTime;
+  };
+
+  return BaseEvent;
+
+})();
+
+this.ScoreEvent = (function(_super) {
+  var DURATION;
+
+  __extends(ScoreEvent, _super);
+
+  DURATION = 750;
+
+  function ScoreEvent(cell, score) {
+    this.cell = cell;
+    this.score = score;
+    this.cell.event = self;
+    this.time = DURATION;
+  }
+
+  ScoreEvent.prototype.perform = function() {
+    return this.cell.drawScore(this.score);
+  };
+
+  ScoreEvent.prototype.finalize = function() {
+    return this.cell.event = null;
+  };
+
+  return ScoreEvent;
+
+})(BaseEvent);
+
+this.HitEvent = (function(_super) {
+  __extends(HitEvent, _super);
+
+  function HitEvent(from, to, distance) {
+    this.from = from;
+    this.to = to;
+    this.distance = distance;
+    this.to.event = self;
+    this.time = this.distance * MOVE_TIME;
+    this.deltaX = (this.to.x - this.from.x) / this.distance / MOVE_TIME;
+    this.deltaY = (this.to.y - this.from.y) / this.distance / MOVE_TIME;
+  }
+
+  HitEvent.prototype.perform = function() {
+    var cell, i, _i, _len, _ref, _results;
+    this.from.x += this.tickTime * this.deltaX;
+    this.from.y += this.tickTime * this.deltaY;
+    this.from.draw();
+    _ref = this.traversedPath();
+    _results = [];
+    for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+      cell = _ref[i];
+      if (cell.event == null) {
+        _results.push(board.events.push(new ScoreEvent(cell, i + 1)));
+      }
+    }
+    return _results;
+  };
+
+  HitEvent.prototype.finalize = function() {
+    this.from.n = null;
+    this.from.setDefaultCoords();
+    this.to.n = null;
+    return board.events.push(new ScoreEvent(this.to, this.distance));
+  };
+
+  HitEvent.prototype.traversedPath = function() {
+    var currentI, currentJ, i, j, path, _i, _j, _ref, _ref1;
+    path = [];
+    if (this.from.i === this.to.i) {
+      currentJ = Math.floor(this.from.y / WIDTH);
+      for (j = _i = _ref = this.from.j; _ref <= currentJ ? _i < currentJ : _i > currentJ; j = _ref <= currentJ ? ++_i : --_i) {
+        if (j !== this.to.j) {
+          path.push(board.cells[j][this.from.i]);
+        }
+      }
+    } else {
+      currentI = Math.floor(this.from.x / WIDTH);
+      for (i = _j = _ref1 = this.from.i; _ref1 <= currentI ? _j < currentI : _j > currentI; i = _ref1 <= currentI ? ++_j : --_j) {
+        if (i !== this.to.i) {
+          path.push(board.cells[this.from.j][i]);
+        }
+      }
+    }
+    return path;
+  };
+
+  return HitEvent;
+
+})(BaseEvent);
+
+this.MoveEvent = (function(_super) {
+  __extends(MoveEvent, _super);
+
+  function MoveEvent(from, to, distance) {
+    this.from = from;
+    this.to = to;
+    this.distance = distance;
+    this.to.event = self;
+    this.endX = this.to.x;
+    this.endY = this.to.y;
+    this.to.n = this.from.n;
+    this.to.x = this.from.x;
+    this.to.y = this.from.y;
+    this.from.n = null;
+    this.time = this.distance * MOVE_TIME;
+    this.deltaX = (this.endX - this.to.x) / this.distance / MOVE_TIME;
+    this.deltaY = (this.endY - this.to.y) / this.distance / MOVE_TIME;
+  }
+
+  MoveEvent.prototype.perform = function() {
+    var cell, i, _i, _len, _ref, _results;
+    this.to.x += this.tickTime * this.deltaX;
+    this.to.y += this.tickTime * this.deltaY;
+    this.to.draw();
+    _ref = this.traversedPath();
+    _results = [];
+    for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+      cell = _ref[i];
+      if (cell.event == null) {
+        _results.push(board.events.push(new ScoreEvent(cell, (i + 1) * -1)));
+      }
+    }
+    return _results;
+  };
+
+  MoveEvent.prototype.finalize = function() {
+    this.to.setDefaultCoords();
+    return this.to.event = null;
+  };
+
+  MoveEvent.prototype.traversedPath = function() {
+    var currentI, currentJ, i, j, path, _i, _j, _ref, _ref1;
+    path = [];
+    if (this.from.i === this.to.i) {
+      currentJ = Math.floor(this.to.y / WIDTH);
+      for (j = _i = _ref = this.from.j; _ref <= currentJ ? _i < currentJ : _i > currentJ; j = _ref <= currentJ ? ++_i : --_i) {
+        if (j !== this.to.j) {
+          path.push(board.cells[j][this.to.i]);
+        }
+      }
+    } else {
+      currentI = Math.floor(this.to.x / WIDTH);
+      for (i = _j = _ref1 = this.from.i; _ref1 <= currentI ? _j < currentI : _j > currentI; i = _ref1 <= currentI ? ++_j : --_j) {
+        if (i !== this.to.i) {
+          path.push(board.cells[this.to.j][i]);
+        }
+      }
+    }
+    return path;
+  };
+
+  return MoveEvent;
+
+})(BaseEvent);
 
 Game = (function() {
   function Game() {
@@ -600,85 +747,6 @@ Game = (function() {
 
 })();
 
-this.HitEvent = (function(_super) {
-  __extends(HitEvent, _super);
-
-  function HitEvent(from, to, distance) {
-    this.from = from;
-    this.to = to;
-    this.distance = distance;
-    this.time = this.distance * MOVE_TIME;
-    this.deltaX = (this.to.x - this.from.x) / this.distance / MOVE_TIME;
-    this.deltaY = (this.to.y - this.from.y) / this.distance / MOVE_TIME;
-  }
-
-  HitEvent.prototype.perform = function() {
-    var cell, i, _i, _len, _ref, _results;
-    this.from.x += this.tickTime * this.deltaX;
-    this.from.y += this.tickTime * this.deltaY;
-    _ref = Board.path(this.from, this.to);
-    _results = [];
-    for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-      cell = _ref[i];
-      if (cell.event == null) {
-        _results.push(board.events.push(new ScoreEvent(cell, i + 1)));
-      }
-    }
-    return _results;
-  };
-
-  HitEvent.prototype.finalize = function() {
-    this.from.n = void 0;
-    this.to.n = void 0;
-    this.from.setDefaultCoords();
-    board.selectedCell = null;
-    board.targetCell = null;
-    return board.events.push(new ScoreEvent(this.to, this.distance));
-  };
-
-  return HitEvent;
-
-})(BaseEvent);
-
-this.MoveEvent = (function(_super) {
-  __extends(MoveEvent, _super);
-
-  function MoveEvent(from, to, distance) {
-    this.from = from;
-    this.to = to;
-    this.distance = distance;
-    this.to.n = this.from.n;
-    this.from.n = void 0;
-    this.time = this.distance * MOVE_TIME;
-    this.deltaX = (this.to.x - this.from.x) / this.distance / MOVE_TIME;
-    this.deltaY = (this.to.y - this.from.y) / this.distance / MOVE_TIME;
-  }
-
-  MoveEvent.prototype.perform = function() {
-    var cell, i, _i, _len, _ref, _results;
-    this.from.x += this.tickTime * this.deltaX;
-    this.from.y += this.tickTime * this.deltaY;
-    _ref = Board.path(this.from, this.to);
-    _results = [];
-    for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-      cell = _ref[i];
-      if (cell.event == null) {
-        _results.push(board.events.push(new ScoreEvent(cell, (i + 1) * -1)));
-      }
-    }
-    return _results;
-  };
-
-  MoveEvent.prototype.finalize = function() {
-    this.from.setDefaultCoords();
-    board.selectedCell = null;
-    return board.targetCell = null;
-  };
-
-  return MoveEvent;
-
-})(BaseEvent);
-
 Number.randomInt = function(a, z) {
   var x;
   x = a - 1;
@@ -769,32 +837,6 @@ Visibility.change(function(e, state) {
     return game.pause();
   }
 });
-
-this.ScoreEvent = (function(_super) {
-  var DURATION;
-
-  __extends(ScoreEvent, _super);
-
-  DURATION = 750;
-
-  function ScoreEvent(cell, score) {
-    this.cell = cell;
-    this.score = score;
-    this.cell.event = self;
-    this.time = DURATION;
-  }
-
-  ScoreEvent.prototype.perform = function() {
-    return this.cell.drawScore(this.score);
-  };
-
-  ScoreEvent.prototype.finalize = function() {
-    return this.cell.event = void 0;
-  };
-
-  return ScoreEvent;
-
-})(BaseEvent);
 
 this.Utils = (function() {
   function Utils() {}

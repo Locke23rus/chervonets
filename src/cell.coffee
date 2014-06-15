@@ -2,7 +2,7 @@ class Cell
 
   constructor: (@i, @j, @n) ->
     @setDefaultCoords()
-    @event = undefined
+    @event = null
 
   color: ->
     switch @n
