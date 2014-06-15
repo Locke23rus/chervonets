@@ -541,7 +541,7 @@ this.HitEvent = (function(_super) {
     this.from.n = null;
     this.from.setDefaultCoords();
     this.to.n = null;
-    return board.events.push(new ScoreEvent(this.to, this.distance));
+    return board.events.push(new ScoreEvent(this.to, this.distance + 1));
   };
 
   HitEvent.prototype.traversedPath = function() {

@@ -55,7 +55,7 @@ class @HitEvent extends BaseEvent
     @from.setDefaultCoords()
     @to.n = null
 
-    board.events.push new ScoreEvent(@to, @distance)
+    board.events.push new ScoreEvent(@to, @distance + 1)
 
   traversedPath: ->
     path = []
