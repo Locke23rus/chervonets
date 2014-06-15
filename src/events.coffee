@@ -30,6 +30,7 @@ class @ScoreEvent extends BaseEvent
 class @HitEvent extends BaseEvent
 
   constructor: (@from, @to, @distance) ->
+    @from.event = self
     @to.event = self
     @time = @distance * MOVE_TIME
     @deltaX = (@to.x - @from.x) / @distance / MOVE_TIME
@@ -39,12 +40,14 @@ class @HitEvent extends BaseEvent
     @from.x += @tickTime * @deltaX
     @from.y += @tickTime * @deltaY
 
+    @to.draw()
     @from.draw()
 
     for cell, i in @traversedPath() when not cell.event?
       board.events.push new ScoreEvent(cell, i+1)
 
   finalize: ->
+    @from.event = null
     @from.n = null
     @from.setDefaultCoords()
     @to.n = null

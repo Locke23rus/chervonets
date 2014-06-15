@@ -61,7 +61,7 @@ Board = (function() {
     for (j = _i = 0; 0 <= N ? _i < N : _i > N; j = 0 <= N ? ++_i : --_i) {
       for (i = _j = 0; 0 <= N ? _j < N : _j > N; i = 0 <= N ? ++_j : --_j) {
         cell = this.cells[j][i];
-        if (cell.n != null) {
+        if ((cell.n != null) && (cell.event == null)) {
           cell.draw();
         }
       }
@@ -506,6 +506,7 @@ this.HitEvent = (function(_super) {
     this.from = from;
     this.to = to;
     this.distance = distance;
+    this.from.event = self;
     this.to.event = self;
     this.time = this.distance * MOVE_TIME;
     this.deltaX = (this.to.x - this.from.x) / this.distance / MOVE_TIME;
@@ -516,6 +517,7 @@ this.HitEvent = (function(_super) {
     var cell, i, _i, _len, _ref, _results;
     this.from.x += this.tickTime * this.deltaX;
     this.from.y += this.tickTime * this.deltaY;
+    this.to.draw();
     this.from.draw();
     _ref = this.traversedPath();
     _results = [];
@@ -529,6 +531,7 @@ this.HitEvent = (function(_super) {
   };
 
   HitEvent.prototype.finalize = function() {
+    this.from.event = null;
     this.from.n = null;
     this.from.setDefaultCoords();
     this.to.n = null;
@@ -629,7 +632,7 @@ Game = (function() {
     this.paused = false;
     this.finished = false;
     this.showScore();
-    this.interval = null;
+    this.boardFrame = null;
     this.remainingTime = TIME;
     this.timeInterval = null;
     this.waveTime = WAVE_TIME * 1000;
@@ -677,24 +680,28 @@ Game = (function() {
   Game.prototype.start = function() {
     document.getElementById('pause').innerHTML = 'Pause';
     this.showTime();
-    this.interval = setInterval((function() {
-      var currentTime, elapsedTimeMS;
-      game.frameCounter++;
-      currentTime = performance.now() || new Date().getTime();
-      elapsedTimeMS = currentTime - game.time;
-      if (elapsedTimeMS >= 1000) {
-        game.fps = game.frameCounter;
-        game.frameCounter = 0;
-        game.time = currentTime;
-      }
-      return board.draw();
-    }), FRAME_RATE);
+    game.boardFrame = requestAnimationFrame(game.tick);
     this.timeInterval = setInterval((function() {
       return game.updateTime();
     }), 1000);
     return this.waveInterval = setInterval((function() {
       return game.updateWave();
     }), WAVE_RATE);
+  };
+
+  Game.prototype.tick = function() {
+    var currentTime, elapsedTimeMS;
+    game.frameCounter++;
+    currentTime = performance.now() || new Date().getTime();
+    elapsedTimeMS = currentTime - game.time;
+    if (elapsedTimeMS >= 1000) {
+      game.fps = game.frameCounter;
+      game.frameCounter = 0;
+      game.time = currentTime;
+      console.log(game.fps);
+    }
+    board.draw();
+    return game.boardFrame = requestAnimationFrame(game.tick);
   };
 
   Game.prototype.finish = function() {
@@ -709,7 +716,7 @@ Game = (function() {
 
   Game.prototype.stop = function() {
     document.getElementById('pause').innerHTML = 'Continue';
-    clearInterval(this.interval);
+    cancelAnimationFrame(this.boardFrame);
     clearInterval(this.timeInterval);
     return clearInterval(this.waveInterval);
   };

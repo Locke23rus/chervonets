@@ -5,7 +5,7 @@ class Game
     @paused = false
     @finished = false
     @showScore()
-    @interval = null
+    @boardFrame = null
     @remainingTime = TIME
     @timeInterval = null
     @waveTime = WAVE_TIME * 1000
@@ -44,22 +44,25 @@ class Game
   start: () ->
     document.getElementById('pause').innerHTML = 'Pause'
     @showTime()
-    @interval = setInterval (() ->
-      game.frameCounter++
-      currentTime = performance.now() || new Date().getTime()
-      elapsedTimeMS = currentTime - game.time;
-      if elapsedTimeMS >= 1000
-        game.fps = game.frameCounter
-        game.frameCounter = 0
-        game.time = currentTime
-      board.draw()),
-      FRAME_RATE
+    game.boardFrame = requestAnimationFrame game.tick
     @timeInterval = setInterval (() ->
       game.updateTime()),
       1000
     @waveInterval = setInterval (() ->
       game.updateWave()),
       WAVE_RATE
+
+  tick: ->
+    game.frameCounter++
+    currentTime = performance.now() || new Date().getTime()
+    elapsedTimeMS = currentTime - game.time;
+    if elapsedTimeMS >= 1000
+      game.fps = game.frameCounter
+      game.frameCounter = 0
+      game.time = currentTime
+      console.log game.fps
+    board.draw()
+    game.boardFrame = requestAnimationFrame game.tick
 
   finish: () ->
     @stop()
@@ -71,7 +74,7 @@ class Game
 
   stop: () ->
     document.getElementById('pause').innerHTML = 'Continue'
-    clearInterval @interval
+    cancelAnimationFrame @boardFrame
     clearInterval @timeInterval
     clearInterval @waveInterval
 

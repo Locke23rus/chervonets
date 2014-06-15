@@ -30,7 +30,7 @@ class Board
     for j in [0...N]
       for i in [0...N]
         cell = @cells[j][i]
-        cell.draw() if cell.n?
+        cell.draw() if cell.n? and not cell.event?
 
     @selectedCell?.drawSelect()
 
