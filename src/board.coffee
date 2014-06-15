@@ -198,3 +198,16 @@ class Board
 
   isSelected: (cell) ->
     @selectedCell? and @selectedCell.i is cell.i and @selectedCell.j is cell.j
+
+
+Board.path = (from, to) ->
+  path = []
+  if from.i is to.i
+    currentJ = from.y // WIDTH
+    for j in [from.j...currentJ] when j isnt to.j
+      path.push board.cells[j][from.i]
+  else
+    currentI = from.x // WIDTH
+    for i in [from.i...currentI] when i isnt to.i
+      path.push board.cells[from.j][i]
+  path
