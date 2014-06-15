@@ -3,6 +3,7 @@ class Cell
   constructor: (@i, @j, @n) ->
     @x = @i * WIDTH
     @y = @j * WIDTH
+    @event = undefined
 
   color: ->
     switch @n
@@ -30,12 +31,12 @@ class Cell
 
   drawNumber: (color) ->
     fakeCtx.fillStyle = color
-    fakeCtx.font = "30px monospaced"
+    fakeCtx.font = "28px monospaced"
     fakeCtx.textBaseline = "middle"
     if @n is 10
-      fakeCtx.fillText @n, @x + 8, @y + 25
+      fakeCtx.fillText @n, @x + 8, @y + 26
     else
-      fakeCtx.fillText @n, @x + 15, @y + 25
+      fakeCtx.fillText @n, @x + 15, @y + 26
 
   isEmpty: ->
     not @n?
@@ -51,3 +52,16 @@ class Cell
     @n = null
     @x = @i * WIDTH
     @y = @j * WIDTH
+
+  drawScore: (score) ->
+    fakeCtx.fillStyle = if score > 0 then "#66CC66" else "#FF3333"
+    fakeCtx.font = "24px monospaced"
+    fakeCtx.textBaseline = "middle"
+    str = if score > 0 then "+#{score}" else score
+    if score is 10
+      fakeCtx.fillText "+#{score}", @x, @y + 26
+    else
+      if score > 0
+        fakeCtx.fillText "+#{score}", @x + 8, @y + 26
+      else
+        fakeCtx.fillText score, @x + 16, @y + 26

@@ -22,9 +22,6 @@ class Board
   draw: ->
     @clear()
 
-    @events = (e for e in @events when e.time > 0)
-    event.draw() for event in @events
-
     unless @hasBlocks()
       board.drawFinish()
       game.finish()
@@ -35,6 +32,10 @@ class Board
         cell = @cells[j][i]
         if cell.n? and not @isSelected(cell)
           cell.draw()
+
+    @events = (e for e in @events when e.time > 0)
+    event.tick() for event in @events
+
     @selectedCell?.drawSelect()
     ctx.drawImage(fakeCanvas, 0, 0);
 
@@ -92,12 +93,14 @@ class Board
         return
       else if @isSameCol() or @isSameRow()
         if @canHit()
-          game.incrementScore @scoreFactor(@hitDistance())
-          @events.push new HitEvent(@selectedCell, @targetCell, @hitDistance())
+          distance = @hitDistance()
+          game.incrementScore Utils.scoreFactor(distance)
+          @events.push new HitEvent(@selectedCell, @targetCell, distance)
           return
         else if @canMove()
-          game.decrementScore @scoreFactor(@moveDistance())
-          @events.push new MoveEvent(@selectedCell, @targetCell, @moveDistance())
+          distance = @moveDistance()
+          game.decrementScore Utils.scoreFactor(distance)
+          @events.push new MoveEvent(@selectedCell, @targetCell, distance)
           return
 
     @selectedCell = @clickedCell
@@ -183,11 +186,6 @@ class Board
       Math.abs(@targetCell.i - @selectedCell.i)
     else
       Math.abs(@targetCell.j - @selectedCell.j)
-
-  scoreFactor: (n) ->
-    sum = 0
-    sum += i for i in [0..n]
-    sum
 
   isSelf: () ->
     @selectedCell.i is @clickedCell.i and @selectedCell.j is @clickedCell.j

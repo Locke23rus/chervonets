@@ -51,12 +51,25 @@ Board = (function() {
   Board.prototype.draw = function() {
     var cell, e, event, i, j, _i, _j, _k, _len, _ref, _ref1;
     this.clear();
+    if (!this.hasBlocks()) {
+      board.drawFinish();
+      game.finish();
+      return;
+    }
+    for (j = _i = 0; 0 <= N ? _i < N : _i > N; j = 0 <= N ? ++_i : --_i) {
+      for (i = _j = 0; 0 <= N ? _j < N : _j > N; i = 0 <= N ? ++_j : --_j) {
+        cell = this.cells[j][i];
+        if ((cell.n != null) && !this.isSelected(cell)) {
+          cell.draw();
+        }
+      }
+    }
     this.events = (function() {
-      var _i, _len, _ref, _results;
+      var _k, _len, _ref, _results;
       _ref = this.events;
       _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        e = _ref[_i];
+      for (_k = 0, _len = _ref.length; _k < _len; _k++) {
+        e = _ref[_k];
         if (e.time > 0) {
           _results.push(e);
         }
@@ -64,22 +77,9 @@ Board = (function() {
       return _results;
     }).call(this);
     _ref = this.events;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      event = _ref[_i];
-      event.draw();
-    }
-    if (!this.hasBlocks()) {
-      board.drawFinish();
-      game.finish();
-      return;
-    }
-    for (j = _j = 0; 0 <= N ? _j < N : _j > N; j = 0 <= N ? ++_j : --_j) {
-      for (i = _k = 0; 0 <= N ? _k < N : _k > N; i = 0 <= N ? ++_k : --_k) {
-        cell = this.cells[j][i];
-        if ((cell.n != null) && !this.isSelected(cell)) {
-          cell.draw();
-        }
-      }
+    for (_k = 0, _len = _ref.length; _k < _len; _k++) {
+      event = _ref[_k];
+      event.tick();
     }
     if ((_ref1 = this.selectedCell) != null) {
       _ref1.drawSelect();
@@ -153,7 +153,7 @@ Board = (function() {
   };
 
   Board.prototype.click = function(x, y) {
-    var i, j;
+    var distance, i, j;
     i = Math.floor(x / WIDTH);
     j = Math.floor(y / WIDTH);
     this.clickedCell = this.cells[j][i];
@@ -166,12 +166,14 @@ Board = (function() {
         return;
       } else if (this.isSameCol() || this.isSameRow()) {
         if (this.canHit()) {
-          game.incrementScore(this.scoreFactor(this.hitDistance()));
-          this.events.push(new HitEvent(this.selectedCell, this.targetCell, this.hitDistance()));
+          distance = this.hitDistance();
+          game.incrementScore(Utils.scoreFactor(distance));
+          this.events.push(new HitEvent(this.selectedCell, this.targetCell, distance));
           return;
         } else if (this.canMove()) {
-          game.decrementScore(this.scoreFactor(this.moveDistance()));
-          this.events.push(new MoveEvent(this.selectedCell, this.targetCell, this.moveDistance()));
+          distance = this.moveDistance();
+          game.decrementScore(Utils.scoreFactor(distance));
+          this.events.push(new MoveEvent(this.selectedCell, this.targetCell, distance));
           return;
         }
       }
@@ -335,15 +337,6 @@ Board = (function() {
     }
   };
 
-  Board.prototype.scoreFactor = function(n) {
-    var i, sum, _i;
-    sum = 0;
-    for (i = _i = 0; 0 <= n ? _i <= n : _i >= n; i = 0 <= n ? ++_i : --_i) {
-      sum += i;
-    }
-    return sum;
-  };
-
   Board.prototype.isSelf = function() {
     return this.selectedCell.i === this.clickedCell.i && this.selectedCell.j === this.clickedCell.j;
   };
@@ -371,6 +364,7 @@ Cell = (function() {
     this.n = n;
     this.x = this.i * WIDTH;
     this.y = this.j * WIDTH;
+    this.event = void 0;
   }
 
   Cell.prototype.color = function() {
@@ -414,12 +408,12 @@ Cell = (function() {
 
   Cell.prototype.drawNumber = function(color) {
     fakeCtx.fillStyle = color;
-    fakeCtx.font = "30px monospaced";
+    fakeCtx.font = "28px monospaced";
     fakeCtx.textBaseline = "middle";
     if (this.n === 10) {
-      return fakeCtx.fillText(this.n, this.x + 8, this.y + 25);
+      return fakeCtx.fillText(this.n, this.x + 8, this.y + 26);
     } else {
-      return fakeCtx.fillText(this.n, this.x + 15, this.y + 25);
+      return fakeCtx.fillText(this.n, this.x + 15, this.y + 26);
     }
   };
 
@@ -440,6 +434,23 @@ Cell = (function() {
     this.n = null;
     this.x = this.i * WIDTH;
     return this.y = this.j * WIDTH;
+  };
+
+  Cell.prototype.drawScore = function(score) {
+    var str;
+    fakeCtx.fillStyle = score > 0 ? "#66CC66" : "#FF3333";
+    fakeCtx.font = "24px monospaced";
+    fakeCtx.textBaseline = "middle";
+    str = score > 0 ? "+" + score : score;
+    if (score === 10) {
+      return fakeCtx.fillText("+" + score, this.x, this.y + 26);
+    } else {
+      if (score > 0) {
+        return fakeCtx.fillText("+" + score, this.x + 8, this.y + 26);
+      } else {
+        return fakeCtx.fillText(score, this.x + 16, this.y + 26);
+      }
+    }
   };
 
   return Cell;
@@ -578,18 +589,61 @@ this.HitEvent = (function() {
     this.deltaY = (this.to.y - this.from.y) / this.distance / MOVE_TIME;
   }
 
-  HitEvent.prototype.draw = function() {
-    var tickTime;
-    tickTime = 1000 / game.fps;
-    this.from.x += tickTime * this.deltaX;
-    this.from.y += tickTime * this.deltaY;
-    this.time -= tickTime;
+  HitEvent.prototype.tick = function() {
+    this.updateTimer();
+    this.perform();
     if (this.time <= 0) {
-      this.from.reset();
-      this.to.reset();
-      board.selectedCell = null;
-      return board.targetCell = null;
+      return this.finalize();
     }
+  };
+
+  HitEvent.prototype.updateTimer = function() {
+    this.tickTime = 1000 / game.fps;
+    return this.time -= this.tickTime;
+  };
+
+  HitEvent.prototype.perform = function() {
+    var cell, i, _i, _len, _ref, _results;
+    this.from.x += this.tickTime * this.deltaX;
+    this.from.y += this.tickTime * this.deltaY;
+    _ref = this.path();
+    _results = [];
+    for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+      cell = _ref[i];
+      if (cell.event == null) {
+        _results.push(board.events.push(new ScoreEvent(cell, i + 1)));
+      }
+    }
+    return _results;
+  };
+
+  HitEvent.prototype.finalize = function() {
+    this.from.reset();
+    this.to.reset();
+    board.selectedCell = null;
+    board.targetCell = null;
+    return board.events.push(new ScoreEvent(this.to, this.distance));
+  };
+
+  HitEvent.prototype.path = function() {
+    var currentI, currentJ, i, j, path, _i, _j, _ref, _ref1;
+    path = [];
+    if (this.from.i === this.to.i) {
+      currentJ = Math.floor(this.from.y / WIDTH);
+      for (j = _i = _ref = this.from.j; _ref <= currentJ ? _i < currentJ : _i > currentJ; j = _ref <= currentJ ? ++_i : --_i) {
+        if (j !== this.to.j) {
+          path.push(board.cells[j][this.from.i]);
+        }
+      }
+    } else {
+      currentI = Math.floor(this.from.x / WIDTH);
+      for (i = _j = _ref1 = this.from.i; _ref1 <= currentI ? _j < currentI : _j > currentI; i = _ref1 <= currentI ? ++_j : --_j) {
+        if (i !== this.to.i) {
+          path.push(board.cells[this.from.j][i]);
+        }
+      }
+    }
+    return path;
   };
 
   return HitEvent;
@@ -606,18 +660,60 @@ this.MoveEvent = (function() {
     this.deltaY = (this.to.y - this.from.y) / this.distance / MOVE_TIME;
   }
 
-  MoveEvent.prototype.draw = function() {
-    var tickTime;
-    tickTime = 1000 / game.fps;
-    this.from.x += tickTime * this.deltaX;
-    this.from.y += tickTime * this.deltaY;
-    this.time -= tickTime;
+  MoveEvent.prototype.tick = function() {
+    this.updateTimer();
+    this.perform();
     if (this.time <= 0) {
-      this.to.n = this.from.n;
-      this.from.reset();
-      board.selectedCell = null;
-      return board.targetCell = null;
+      return this.finalize();
     }
+  };
+
+  MoveEvent.prototype.updateTimer = function() {
+    this.tickTime = 1000 / game.fps;
+    return this.time -= this.tickTime;
+  };
+
+  MoveEvent.prototype.perform = function() {
+    var cell, i, _i, _len, _ref, _results;
+    this.from.x += this.tickTime * this.deltaX;
+    this.from.y += this.tickTime * this.deltaY;
+    _ref = this.path();
+    _results = [];
+    for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+      cell = _ref[i];
+      if (cell.event == null) {
+        _results.push(board.events.push(new ScoreEvent(cell, (i + 1) * -1)));
+      }
+    }
+    return _results;
+  };
+
+  MoveEvent.prototype.finalize = function() {
+    this.to.n = this.from.n;
+    this.from.reset();
+    board.selectedCell = null;
+    return board.targetCell = null;
+  };
+
+  MoveEvent.prototype.path = function() {
+    var currentI, currentJ, i, j, path, _i, _j, _ref, _ref1;
+    path = [];
+    if (this.from.i === this.to.i) {
+      currentJ = Math.floor(this.from.y / WIDTH);
+      for (j = _i = _ref = this.from.j; _ref <= currentJ ? _i < currentJ : _i > currentJ; j = _ref <= currentJ ? ++_i : --_i) {
+        if (j !== this.to.j) {
+          path.push(board.cells[j][this.from.i]);
+        }
+      }
+    } else {
+      currentI = Math.floor(this.from.x / WIDTH);
+      for (i = _j = _ref1 = this.from.i; _ref1 <= currentI ? _j < currentI : _j > currentI; i = _ref1 <= currentI ? ++_j : --_j) {
+        if (i !== this.to.i) {
+          path.push(board.cells[this.from.j][i]);
+        }
+      }
+    }
+    return path;
   };
 
   return MoveEvent;
@@ -663,7 +759,7 @@ game = null;
 
 board = null;
 
-MOVE_TIME = 100;
+MOVE_TIME = 75;
 
 canvas.addEventListener('click', (function(e) {
   var x, y;
@@ -714,5 +810,58 @@ Visibility.change(function(e, state) {
     return game.pause();
   }
 });
+
+this.ScoreEvent = (function() {
+  var DURATION;
+
+  DURATION = 750;
+
+  function ScoreEvent(cell, score) {
+    this.cell = cell;
+    this.score = score;
+    this.cell.event = self;
+    this.time = DURATION;
+  }
+
+  ScoreEvent.prototype.tick = function() {
+    this.updateTimer();
+    this.perform();
+    if (this.time <= 0) {
+      return this.finalize();
+    }
+  };
+
+  ScoreEvent.prototype.updateTimer = function() {
+    this.tickTime = 1000 / game.fps;
+    return this.time -= this.tickTime;
+  };
+
+  ScoreEvent.prototype.perform = function() {
+    return this.cell.drawScore(this.score);
+  };
+
+  ScoreEvent.prototype.finalize = function() {
+    return this.cell.event = void 0;
+  };
+
+  return ScoreEvent;
+
+})();
+
+this.Utils = (function() {
+  function Utils() {}
+
+  return Utils;
+
+})();
+
+Utils.scoreFactor = function(distance) {
+  var i, sum, _i;
+  sum = 0;
+  for (i = _i = 0; 0 <= distance ? _i <= distance : _i >= distance; i = 0 <= distance ? ++_i : --_i) {
+    sum += i;
+  }
+  return sum;
+};
 
 //# sourceMappingURL=index.map

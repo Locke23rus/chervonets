@@ -14,7 +14,7 @@ fakeCtx = fakeCanvas.getContext('2d');
 
 game = null
 board = null
-MOVE_TIME = 100
+MOVE_TIME = 75
 
 canvas.addEventListener 'click', ((e) ->
   if game? and not game.finished
