@@ -168,8 +168,8 @@ Board = (function() {
         return;
       } else if (this.isSameCol() || this.isSameRow()) {
         if (this.canHit()) {
-          distance = Board.distance(this.selectedCell, this.targetCell) + 1;
-          game.incrementScore(Utils.scoreFactor(distance));
+          distance = Board.distance(this.selectedCell, this.targetCell);
+          game.incrementScore(Utils.scoreFactor(distance + 1));
           this.events.push(new HitEvent(this.selectedCell, this.targetCell, distance));
           this.selectedCell = null;
           this.targetCell = null;
@@ -506,7 +506,6 @@ this.HitEvent = (function(_super) {
     this.from = from;
     this.to = to;
     this.distance = distance;
-    this.from.event = self;
     this.to.event = self;
     this.time = this.distance * MOVE_TIME;
     this.deltaX = (this.to.x - this.from.x) / this.distance / MOVE_TIME;
@@ -515,8 +514,15 @@ this.HitEvent = (function(_super) {
 
   HitEvent.prototype.perform = function() {
     var cell, i, _i, _len, _ref, _results;
+    this.from.clear();
     this.from.x += this.tickTime * this.deltaX;
+    if ((this.from.x > this.to.x && this.deltaX > 0) || (this.from.x < this.to.x && this.deltaX < 0)) {
+      this.from.x = this.to.x;
+    }
     this.from.y += this.tickTime * this.deltaY;
+    if ((this.from.y > this.to.y && this.deltaY > 0) || (this.from.y < this.to.y && this.deltaY < 0)) {
+      this.from.y = this.to.y;
+    }
     this.to.draw();
     this.from.draw();
     _ref = this.traversedPath();
@@ -542,14 +548,14 @@ this.HitEvent = (function(_super) {
     var currentI, currentJ, i, j, path, _i, _j, _ref, _ref1;
     path = [];
     if (this.from.i === this.to.i) {
-      currentJ = Math.floor(this.from.y / WIDTH);
+      currentJ = this.deltaY > 0 ? Math.floor(this.from.y / WIDTH) : Math.ceil(this.from.y / WIDTH);
       for (j = _i = _ref = this.from.j; _ref <= currentJ ? _i < currentJ : _i > currentJ; j = _ref <= currentJ ? ++_i : --_i) {
         if (j !== this.to.j) {
           path.push(board.cells[j][this.from.i]);
         }
       }
     } else {
-      currentI = Math.floor(this.from.x / WIDTH);
+      currentI = this.deltaX > 0 ? Math.floor(this.from.x / WIDTH) : Math.ceil(this.from.x / WIDTH);
       for (i = _j = _ref1 = this.from.i; _ref1 <= currentI ? _j < currentI : _j > currentI; i = _ref1 <= currentI ? ++_j : --_j) {
         if (i !== this.to.i) {
           path.push(board.cells[this.from.j][i]);
@@ -574,6 +580,8 @@ this.MoveEvent = (function(_super) {
     this.time = this.distance * MOVE_TIME;
     this.deltaX = (this.to.x - this.from.x) / this.distance / MOVE_TIME;
     this.deltaY = (this.to.y - this.from.y) / this.distance / MOVE_TIME;
+    this.endX = this.to.x;
+    this.endY = this.to.y;
     this.to.n = this.from.n;
     this.to.x = this.from.x;
     this.to.y = this.from.y;
@@ -582,8 +590,15 @@ this.MoveEvent = (function(_super) {
 
   MoveEvent.prototype.perform = function() {
     var cell, i, _i, _len, _ref, _results;
+    this.to.clear();
     this.to.x += this.tickTime * this.deltaX;
+    if ((this.to.x > this.endX && this.deltaX > 0) || (this.to.x < this.endX && this.deltaX < 0)) {
+      this.to.x = this.endX;
+    }
     this.to.y += this.tickTime * this.deltaY;
+    if ((this.to.y > this.endY && this.deltaY > 0) || (this.to.y < this.endY && this.deltaY < 0)) {
+      this.to.y = this.endY;
+    }
     this.to.draw();
     _ref = this.traversedPath();
     _results = [];
@@ -605,14 +620,14 @@ this.MoveEvent = (function(_super) {
     var currentI, currentJ, i, j, path, _i, _j, _ref, _ref1;
     path = [];
     if (this.from.i === this.to.i) {
-      currentJ = Math.floor(this.to.y / WIDTH);
+      currentJ = this.deltaY > 0 ? Math.floor(this.to.y / WIDTH) : Math.ceil(this.to.y / WIDTH);
       for (j = _i = _ref = this.from.j; _ref <= currentJ ? _i < currentJ : _i > currentJ; j = _ref <= currentJ ? ++_i : --_i) {
         if (j !== this.to.j) {
           path.push(board.cells[j][this.to.i]);
         }
       }
     } else {
-      currentI = Math.floor(this.to.x / WIDTH);
+      currentI = this.deltaX > 0 ? Math.floor(this.to.x / WIDTH) : Math.ceil(this.to.x / WIDTH);
       for (i = _j = _ref1 = this.from.i; _ref1 <= currentI ? _j < currentI : _j > currentI; i = _ref1 <= currentI ? ++_j : --_j) {
         if (i !== this.to.i) {
           path.push(board.cells[this.to.j][i]);
@@ -698,7 +713,6 @@ Game = (function() {
       game.fps = game.frameCounter;
       game.frameCounter = 0;
       game.time = currentTime;
-      console.log(game.fps);
     }
     board.draw();
     return game.boardFrame = requestAnimationFrame(game.tick);
@@ -803,7 +817,7 @@ game = null;
 
 board = null;
 
-MOVE_TIME = 75;
+MOVE_TIME = 100;
 
 canvas.addEventListener('click', (function(e) {
   var x, y;

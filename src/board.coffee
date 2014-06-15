@@ -93,8 +93,8 @@ class Board
         return
       else if @isSameCol() or @isSameRow()
         if @canHit()
-          distance = Board.distance(@selectedCell, @targetCell) + 1
-          game.incrementScore Utils.scoreFactor(distance)
+          distance = Board.distance(@selectedCell, @targetCell)
+          game.incrementScore Utils.scoreFactor(distance + 1)
           @events.push new HitEvent(@selectedCell, @targetCell, distance)
           @selectedCell = null
           @targetCell = null
