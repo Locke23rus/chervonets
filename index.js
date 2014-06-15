@@ -54,6 +54,7 @@ Board = (function() {
     var cell, e, event, i, j, _i, _j, _k, _len, _ref, _ref1;
     this.clear();
     if (!this.hasBlocks()) {
+      game.addRemainingTimeToScore();
       board.drawFinish();
       game.finish();
       return;
@@ -721,7 +722,6 @@ Game = (function() {
   Game.prototype.finish = function() {
     this.stop();
     this.finished = true;
-    this.addRemainingTimeToScore();
     if (this.score > bestScore()) {
       this.setBestScore();
       return showBestScore();

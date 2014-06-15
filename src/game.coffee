@@ -66,7 +66,6 @@ class Game
   finish: () ->
     @stop()
     @finished = true
-    @addRemainingTimeToScore()
     if @score > bestScore()
       @setBestScore()
       showBestScore()

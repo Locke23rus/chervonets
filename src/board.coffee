@@ -23,6 +23,7 @@ class Board
     @clear()
 
     unless @hasBlocks()
+      game.addRemainingTimeToScore()
       board.drawFinish()
       game.finish()
       return
