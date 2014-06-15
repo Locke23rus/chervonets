@@ -700,6 +700,7 @@ Game = (function() {
   Game.prototype.finish = function() {
     this.stop();
     this.finished = true;
+    this.addRemainingTimeToScore();
     if (this.score > bestScore()) {
       this.setBestScore();
       return showBestScore();
@@ -739,6 +740,17 @@ Game = (function() {
 
   Game.prototype.showWave = function() {
     return document.getElementById('wave').style.width = (this.waveTime / WAVE_RATE) + 'px';
+  };
+
+  Game.prototype.addRemainingTimeToScore = function() {
+    return setTimeout((function() {
+      if (game.remainingTime > 0) {
+        game.incrementScore(1);
+        game.remainingTime--;
+        game.showTime();
+        return game.addRemainingTimeToScore();
+      }
+    }), 10);
   };
 
   return Game;

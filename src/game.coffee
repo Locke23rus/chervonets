@@ -64,6 +64,7 @@ class Game
   finish: () ->
     @stop()
     @finished = true
+    @addRemainingTimeToScore()
     if @score > bestScore()
       @setBestScore()
       showBestScore()
@@ -96,3 +97,12 @@ class Game
 
   showWave: () ->
     document.getElementById('wave').style.width = (@waveTime / WAVE_RATE) + 'px'
+
+  addRemainingTimeToScore: ->
+    setTimeout (->
+      if game.remainingTime > 0
+        game.incrementScore(1)
+        game.remainingTime--
+        game.showTime()
+        game.addRemainingTimeToScore()
+      ), 10
