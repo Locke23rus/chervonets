@@ -69,6 +69,7 @@ class Game
     if @score > bestScore()
       @setBestScore()
       showBestScore()
+    board.drawFinish()
 
   stop: () ->
     document.getElementById('pause').innerHTML = 'Continue'
@@ -81,7 +82,6 @@ class Game
     @showTime()
 
     if @remainingTime is 0
-      board.drawFinish()
       game.finish()
 
   updateWave: () ->

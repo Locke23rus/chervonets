@@ -24,7 +24,6 @@ class Board
 
     unless @hasBlocks()
       game.addRemainingTimeToScore()
-      board.drawFinish()
       game.finish()
       return
 
@@ -68,19 +67,25 @@ class Board
     fakeCtx.clearRect 0, 0, CANVAS_WIDTH, CANVAS_WIDTH
 
   drawFinish: ->
-    @drawText 'Finish!'
+    @clear()
+    fakeCtx.fillStyle = '#000'
+    fakeCtx.textBaseline = 'middle'
+    fakeCtx.font = '48px Slackey'
+    fakeCtx.fillText 'Finish!', 155, 150
+    fakeCtx.font = '34px Slackey'
+    if game.score is bestScore()
+      fakeCtx.fillText "New record: #{game.score}", 95, 275
+    else
+      fakeCtx.fillText "Your score: #{bestScore()}", 95, 275
     ctx.drawImage(fakeCanvas, 0, 0);
 
   drawPaused: ->
-    @drawText 'Paused'
-    ctx.drawImage(fakeCanvas, 0, 0);
-
-  drawText: (text) ->
     @clear()
     fakeCtx.fillStyle = '#000'
-    fakeCtx.font = '50px Slackey'
+    fakeCtx.font = '48px Slackey'
     fakeCtx.textBaseline = 'middle'
-    fakeCtx.fillText text, CANVAS_WIDTH / 2 - 85, CANVAS_WIDTH / 2
+    fakeCtx.fillText 'Paused', 145, 240
+    ctx.drawImage(fakeCanvas, 0, 0);
 
   click: (x, y) ->
     i = x // WIDTH
